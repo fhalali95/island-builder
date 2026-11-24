@@ -1,0 +1,817 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Island Builder</title>
+<style>
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);--bg:#edf2ef;--card:#fff;--tx:#14211a;--mu:#5b6b61;--ac:#0e9f78;--bd:#d6e0da;--bad:#c9482e;--ok:#0e9f78;--sh:0 2px 10px #0b2a1a14}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){color-scheme:dark;--bg:#0c1511;--card:#16221b;--tx:#e8f0ea;--mu:#9bab9f;--ac:#34d3a0;--bd:#2a3a2f;--bad:#f0735a;--ok:#4cc585;--sh:0 2px 10px #0006}}
+:root[data-theme="dark"]{color-scheme:dark;--bg:#0c1511;--card:#16221b;--tx:#e8f0ea;--mu:#9bab9f;--ac:#34d3a0;--bd:#2a3a2f;--bad:#f0735a;--ok:#4cc585;--sh:0 2px 10px #0006}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font:14px/1.4 system-ui,-apple-system,"Segoe UI",sans-serif}
+main{max-width:1000px;margin:0 auto;padding:12px}
+.hd{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.brand{font-size:20px;font-weight:800;letter-spacing:1.5px}.tag{font-size:11.5px;color:var(--mu)}
+.btn{background:var(--card);border:1px solid var(--bd);border-radius:20px;padding:6px 12px;color:var(--tx);font:inherit;font-size:12.5px;cursor:pointer}
+#wrap{position:relative;border-radius:18px;overflow:hidden;box-shadow:var(--sh)}
+#cv{display:block;width:100%;touch-action:pan-y;cursor:grab}
+#hud{position:absolute;top:10px;left:10px;display:flex;gap:6px;flex-wrap:wrap}
+.pill{background:#0b1a12b0;color:#fff;backdrop-filter:blur(6px);border-radius:20px;padding:4px 11px;font-size:12.5px;font-variant-numeric:tabular-nums}
+#fl{position:absolute;inset:0;pointer-events:none;opacity:0}
+#cap{position:absolute;left:10px;right:10px;bottom:8px;font-size:12px;color:#fff;text-shadow:0 1px 4px #000a}
+.box{background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:10px 12px;box-shadow:var(--sh)}
+.box h3{margin:0 0 6px;font-size:11.5px;color:var(--mu);text-transform:uppercase;letter-spacing:.7px}
+.ms{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:6px;margin:10px 0}
+.m{background:var(--card);border:1px solid var(--bd);border-left-width:4px;border-radius:10px;padding:6px 8px;font-size:12px}
+.m div{height:6px;border-radius:3px;background:var(--bd);margin-top:4px;overflow:hidden}.m i{display:block;height:100%;transition:width .5s}
+.row{display:grid;grid-template-columns:1fr;gap:10px;margin-bottom:10px}
+@media(min-width:760px){.row{grid-template-columns:1fr 1fr}}
+.tag2{display:inline-block;margin:2px 4px 2px 0;border:1px solid var(--bd);border-radius:20px;padding:2px 9px;font-size:12px}
+.acts{display:grid;grid-template-columns:repeat(auto-fill,minmax(158px,1fr));gap:10px;margin-top:6px}
+.a{position:relative;background:var(--card);border:2px solid var(--bd);border-radius:14px;padding:0 0 8px;text-align:left;color:var(--tx);font:inherit;cursor:pointer;overflow:hidden;box-shadow:var(--sh);transition:transform .15s}
+.a:hover:not(:disabled){transform:translateY(-2px)}
+.a.sel{border-color:var(--ac);box-shadow:0 0 0 3px #0e9f7840}
+.a:disabled{opacity:.42;cursor:not-allowed}
+.a img{width:100%;display:block;aspect-ratio:3/2;object-fit:cover;background:#cfe8f5}
+.thc{width:100%;display:block;aspect-ratio:3/2;background:#cfe8f5}.ph{aspect-ratio:3/2;display:flex;align-items:center;justify-content:center;text-align:center;padding:8px;font-weight:700;background:linear-gradient(135deg,#cfe8f5,#b7dfc4);color:#17402a}
+.price{position:absolute;top:6px;right:6px;background:#0b1a12d0;color:#ffd66b;border-radius:8px;padding:2px 8px;font-weight:700;font-size:12.5px}
+.a .t{padding:6px 9px 0}.a b{display:block;font-size:13.5px}
+.a .ch{font-size:10.5px;color:var(--ac);font-weight:700}
+.a .c span{display:inline-block;font-size:10.5px;border-radius:6px;padding:1px 5px;margin:2px 2px 0 0}
+.p{background:#0e9f7822;color:var(--ok)}.n{background:#c9482e22;color:var(--bad)}
+.a small{display:block;color:var(--mu);font-size:11px;margin-top:2px}
+button.go{width:100%;margin:12px 0;padding:13px;border:0;border-radius:12px;background:var(--ac);color:#fff;font:700 15px system-ui;cursor:pointer;box-shadow:var(--sh)}
+#log p{margin:3px 0}.hint{color:var(--mu);font-size:12px}
+.end li{margin:4px 0;font-size:13px}
+.ovl{position:fixed;inset:0;background:#000b;display:flex;align-items:center;justify-content:center;padding:16px;z-index:50}
+.ovl ol{padding-left:18px;margin:8px 0}.ovl li{margin:7px 0}
+/* modern */
+body{font-family:Inter,"SF Pro Display",system-ui,-apple-system,"Segoe UI",sans-serif}
+main{max-width:1080px}
+.brand{font-weight:800;letter-spacing:.14em;font-size:18px}
+.box{border-radius:22px;border:1px solid rgba(120,140,130,.18);box-shadow:0 8px 30px rgba(10,40,25,.07)}
+#wrap{border-radius:28px;box-shadow:0 18px 50px rgba(10,40,25,.2)}
+.pill{background:rgba(8,24,18,.55);border:1px solid rgba(255,255,255,.22);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);font-weight:600;color:#fff}
+.m{border-radius:16px}
+.btn{border-radius:999px}
+.acts{display:grid!important;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;max-height:600px;overflow-y:auto;padding:4px 4px 14px;-webkit-overflow-scrolling:touch}
+.a{border-radius:20px;border-width:1.5px}
+.a.sel{border-color:var(--ac);box-shadow:0 0 0 4px rgba(14,159,120,.22)}
+.price{background:rgba(8,24,18,.78);color:#fff;border-radius:999px;padding:3px 10px}
+button.go{border-radius:18px;padding:16px;font-size:16px;letter-spacing:.02em;background:linear-gradient(135deg,var(--ac),#0b7f9f)}
+#next{position:sticky;bottom:12px;z-index:5;box-shadow:0 10px 30px rgba(14,159,120,.45)}
+</style>
+</head>
+<body>
+<main>
+<div class="hd"><div><div class="brand">ISLAND BUILDER</div><div class="tag">SUST101 · Sustainable island simulator</div></div><div style="display:flex;gap:8px;align-items:center"><select id="yrs" class="btn" onchange="setYrs(this.value)"><option value="12">12 years</option><option value="20" selected>20 years</option><option value="30">30 years</option></select><select id="dif" class="btn" onchange="setDif(this.value)"><option value="easy">Easy</option><option value="normal" selected>Normal</option><option value="hard">Hard</option></select><button class="btn" onclick="askRestart()">Restart</button><button class="btn" onclick="intro()">How to play</button></div></div>
+<div id="wrap"><canvas id="cv"></canvas><div id="hud"><span class="pill" id="yr"></span><span class="pill" id="cash"></span><span class="pill" id="pop"></span><span class="pill" id="sc"></span></div><div id="fl"></div><div id="cap"></div><div id="dpad" style="position:absolute;left:10px;bottom:34px;display:grid;grid-template-columns:repeat(3,38px);grid-template-rows:repeat(3,38px);gap:4px;touch-action:none;user-select:none;-webkit-user-select:none"><span></span><button class="pill" data-d="u" style="border:0;font-size:16px;cursor:pointer;touch-action:none" aria-label="Move up">&#9650;</button><span></span><button class="pill" data-d="l" style="border:0;font-size:16px;cursor:pointer;touch-action:none" aria-label="Move left">&#9664;</button><button class="pill" data-d="c" style="border:0;font-size:13px;cursor:pointer;touch-action:none" aria-label="Center">&#9679;</button><button class="pill" data-d="r" style="border:0;font-size:16px;cursor:pointer;touch-action:none" aria-label="Move right">&#9654;</button><span></span><button class="pill" data-d="d" style="border:0;font-size:16px;cursor:pointer;touch-action:none" aria-label="Move down">&#9660;</button><span></span></div><div style="position:absolute;right:10px;bottom:34px;display:flex;flex-direction:column;gap:6px"><button class="pill" onclick="zoom(.8)" style="border:0;font-size:20px;width:40px;height:40px;cursor:pointer" aria-label="Zoom in">+</button><button class="pill" onclick="zoom(1.25)" style="border:0;font-size:20px;width:40px;height:40px;cursor:pointer" aria-label="Zoom out">&minus;</button><button class="pill" onclick="zmT=2.2;pvT=1;vth=0;th=.6;pxT=0;pzT=0" style="border:0;font-size:16px;width:40px;height:40px;cursor:pointer" aria-label="Reset view">&#10227;</button><button class="pill" id="prb" onclick="perf()" style="border:0;font-size:12px;width:40px;height:40px;cursor:pointer" aria-label="Performance mode: lighter graphics">Full</button><button class="pill" id="pnb" onclick="panMode=!panMode;this.style.background=panMode?'#0e9f78':'';this.textContent=panMode?'Move':'Spin'" style="border:0;font-size:12px;width:40px;height:40px;cursor:pointer" aria-label="Drag mode: spin or move">Spin</button><button class="pill" id="cyb" onclick="cyc=!cyc;this.textContent=cyc?'Auto':'Day'" style="border:0;font-size:12px;width:40px;height:40px;cursor:pointer" aria-label="Day and night cycle">Auto</button></div></div>
+<div class="box" id="chal" style="margin-top:10px;border-left:5px solid #e0b43a"></div>
+<div class="box" id="ctl" style="display:none;margin-top:10px"><style>.btn:disabled{opacity:.4;cursor:not-allowed}.btn{padding:9px 8px}</style><h3>Fine-tune the location</h3><div id="cinfo" style="font-weight:600;margin-bottom:8px"></div><div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px"><button class="btn" onclick="nudge(1,0)">Forward</button><button class="btn" onclick="nudge(-1,0)">Back</button><button class="btn" onclick="nudge(0,-1)">Left</button><button class="btn" onclick="nudge(0,1)">Right</button></div><div style="display:grid;grid-template-columns:1fr 1fr 1.5fr;gap:6px;margin-top:6px"><button class="btn" onclick="rotGhost()">Rotate</button><button class="btn" onclick="sel=null;updatePads();draw()">Cancel</button><button class="btn" id="okb" style="background:var(--ac);color:#fff;border-color:var(--ac);font-weight:700" onclick="confirmPlace()">Confirm and build</button></div></div>
+<div class="box" id="rmb" style="display:none;margin-top:10px"><h3>Selected building</h3><div id="rmi"></div><div style="display:flex;gap:8px;margin-top:10px"><button class="btn" onclick="selB=-1;updateSel()">Close</button><button class="btn" style="background:#c9482e;color:#fff;border-color:#c9482e;font-weight:700" onclick="removeB()">Remove building</button></div></div>
+<div class="box" style="margin-top:10px"><h3>Build menu: you choose what to build and where</h3><div id="flt"></div><div class="acts" id="acts"></div></div>
+<div class="box" style="margin-top:10px"><h3>Policy of the year (optional, one per year)</h3><select id="pol" class="btn" style="width:100%;border-radius:10px"><option value="">No new policy</option><option value="tax">Carbon tax: +$10M, less CO₂, Equity -1</option><option value="ban">Plastic ban: -$6M, Waste +4</option><option value="water">Water-saving rules: -$4M, Water +4</option><option value="pass">Free transit pass: -$12M, Air +3, Equity +1.5</option><option value="sub">Green subsidy: -$10M, Energy +2.5, Food +2</option></select></div>
+<div class="box" style="margin-top:10px;border-left:5px solid #d4b146"><h3>Crop of the year (farms)</h3><select id="crop" class="btn" onchange="cropInfo()" style="width:100%;border-radius:10px"><option value="none">No crop focus (mixed)</option><option value="wheat">Wheat, rice and grains</option><option value="dates">Dates and palm fruit</option><option value="veg">Vegetables: tomato, cucumber, lettuce, pepper</option><option value="fruit">Fruit: fig, pomegranate, citrus, melon</option><option value="salt">Salt-tolerant barley and quinoa</option><option value="fodder">Fodder: alfalfa and clover</option></select><div id="crinfo" class="hint" style="margin-top:6px"></div></div>
+<button class="go" id="next">Close year and collect budget</button>
+<div class="box" id="goals" style="margin-top:10px"></div>
+<div class="ms" id="ms"></div>
+<div class="row">
+ <div class="box" id="log"><h3>Yearly report</h3><p>Choose a building, then choose its plot. Every building has a price. When you are done, close the year.</p></div>
+ <div class="box"><h3>History (<span id="hy">20</span> years)</h3><svg id="ch" viewBox="0 0 240 80" width="100%" style="display:block"></svg><div id="lg" class="hint" style="margin-top:4px"></div></div>
+</div>
+<div id="end"></div><div id="ov"></div>
+</main>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+const $=id=>document.getElementById(id);
+const M={w:"Water",s:"Waste",e:"Energy",a:"Air quality",f:"Food",q:"Equity"};
+const COL={w:"#3b8fd9",s:"#a0785a",e:"#e0b43a",a:"#8fa3ad",f:"#5fb35a",q:"#9b6bd1"};
+const LAB={w:"Water",s:"Waste",e:"Energy",a:"Air",f:"Food",q:"Equity",c:"CO₂"};
+const ZN={i:"Inland",c:"Coast",d:"Industrial islet",f:"Food security islet"};
+const A=[
+{id:"rain",n:"Rain tanks",ch:"Ch. 10 Freshwater",cost:15,r:{w:3,e:-.3},cap:3,z:"ic"},
+{id:"desal",n:"Desalination plant",ch:"Ch. 10 Freshwater",cost:40,r:{w:6,e:-3,a:-1,c:2},cap:2,z:"c"},
+{id:"wtp",n:"Water treatment plant",ch:"Ch. 10 Water pollution",cost:26,r:{w:3.5,s:1,e:-.8},cap:2,z:"ic"},
+{id:"recy",n:"Recycling hub",ch:"Ch. 16 Solid waste",cost:25,r:{s:3.5,e:-.5},cap:3,z:"icd"},
+{id:"wtx",n:"Waste-to-energy plant",ch:"Ch. 16 Solid waste",cost:38,r:{s:5,e:1.5,a:-.8,c:.5},cap:2,z:"icd",pol:1,x:"Keep away from homes"},
+{id:"comp",n:"Composting yard",ch:"Ch. 16 / 14",cost:14,r:{s:2,f:1.5},cap:2,z:"ic"},
+{id:"solar",n:"Solar farm",ch:"Ch. 18 Renewables",cost:30,r:{e:4,a:1,c:-1},cap:3,z:"icd"},
+{id:"wind",n:"Wind farm",ch:"Ch. 18 Renewables",cost:32,r:{e:3.5,c:-1.2},cap:3,z:"cd"},
+{id:"gas",n:"Gas power plant",ch:"Ch. 17 Nonrenewables",cost:28,r:{e:7,a:-3,c:3},cap:3,z:"icd",pol:1,x:"Keep away from homes"},
+{id:"bus",n:"Electric bus depot",ch:"Ch. 8 Air pollution",cost:22,r:{a:3,e:-1,c:-1},cap:2,z:"ic"},
+{id:"vf",n:"Vertical farm",ch:"Ch. 14 Food",cost:26,r:{f:4,w:-1.5,e:-1.5},cap:3,z:"ic"},
+{id:"mang",n:"Mangrove belt",ch:"Ch. 15 Biodiversity",cost:18,r:{a:1.5,w:1,c:-2},cap:2,z:"c",x:"Shields from storms"},
+{id:"edu",n:"School and campaign",ch:"Ch. 7 Population",cost:20,r:{},cap:2,z:"ic",x:"Slows population growth"},
+{id:"fair",n:"Fair Share Center",ch:"Ch. 2, 3 Values and policy",cost:22,r:{q:3},cap:2,z:"ic",x:"Fair access to benefits for all"},
+{id:"fact",n:"Factory",ch:"Ch. 3 Economics",cost:45,r:{a:-2.5,s:-2,w:-1,c:2},cap:3,z:"d",pol:1,rev:18,x:"Earns 18 per year"},
+{id:"roof",n:"Rooftop farm",ch:"Urban agriculture",cost:18,r:{f:3,w:-.5,a:.5,e:.5},cap:3,z:"ic",x:"Cools buildings, grows food"},
+{id:"green",n:"Green apartments",ch:"Sustainable housing",cost:28,r:{e:1,a:.5,q:1.5,s:.5},cap:3,z:"ic",x:"Efficient, affordable homes"},
+{id:"eco",n:"Eco-business park",ch:"Green economy",cost:34,r:{a:-.4,s:-.4,q:.5},cap:3,z:"icd",rev:11,x:"Earns 11 per year, cleaner than factories"},
+{id:"grid",n:"Smart grid and batteries",ch:"Energy storage",cost:27,r:{e:3,a:.3},cap:2,z:"icd",x:"Makes heatwaves less damaging"},
+{id:"park",n:"Urban forest park",ch:"Biodiversity",cost:22,r:{a:2,q:1.5,c:-1.5},cap:3,z:"ic",x:"Cleans air, shades the town"},
+{id:"hotel",n:"Sustainable hotel",ch:"Eco-tourism",cost:40,r:{q:.8,e:-.8,w:-.8,s:-.6},cap:2,z:"c",rev:14,x:"Coast only. Earns 14 per year from tourism"},
+{id:"tram",n:"Light rail tram",ch:"Public transport",cost:36,r:{a:3.5,e:-1,c:-1.5,q:1},cap:2,z:"ic",x:"Cuts car traffic and pollution"},
+{id:"badgir",n:"Wind towers (Badgir)",ch:"Passive cooling",cost:16,r:{e:2,a:.3,q:.5},cap:3,z:"ic",x:"Traditional cooling cuts electricity demand"},
+{id:"market",n:"Farmers market",ch:"Local food",cost:18,r:{f:2.5,q:1.5,a:.3,c:-.3},cap:2,z:"ic",x:"Local food and fair access"},
+{id:"grey",n:"Greywater recycling",ch:"Water reuse",cost:20,r:{w:2.5,s:.5,e:-.3},cap:3,z:"ic",x:"Reuses shower and laundry water"},
+{id:"flood",n:"Flood barrier",ch:"Climate resilience",cost:24,r:{w:.5,s:1.5,q:1},cap:2,z:"c",x:"Coast only. Protects from storm surge"},
+{id:"school",n:"Eco school",ch:"Education",cost:22,r:{q:1.5},cap:3,z:"ic",rev:3,x:"Educates citizens and slows population growth"},
+{id:"shops",n:"Local shops",ch:"Local economy",cost:16,r:{q:.4,s:-.4},cap:3,z:"ic",rev:7,x:"Local jobs and income"},
+{id:"souq",n:"Souq (traditional market)",ch:"Local economy",cost:20,r:{q:1,f:.6,s:-.3},cap:2,z:"ic",rev:8,x:"Traditional trade, shaded and walkable"},
+{id:"mall",n:"Eco mall",ch:"Commerce",cost:50,r:{e:-2,a:-.6,s:-1.6,q:.2},cap:1,z:"ic",rev:24,x:"Big income, high energy and waste"},
+{id:"fun",n:"Entertainment park",ch:"Leisure",cost:34,r:{q:1.5,e:-1.1,s:-.7,w:-.7},cap:2,z:"ic",rev:12,x:"Ferris wheel and rides, earns tourism income"},
+{id:"hydro",n:"Hydroponic farm",ch:"Water-efficient farming",cost:22,r:{f:3.5,w:-.6,e:-1},cap:3,z:"ic",x:"Grows food in water, no soil"},
+{id:"aqua",n:"Aquaponics farm",ch:"Water-efficient farming",cost:26,r:{f:3,w:-.3,s:.5,e:-.8},cap:2,z:"ic",x:"Fish and plants share recycled water"},
+{id:"reef",n:"Coral reef reserve",ch:"Oceans and fisheries",cost:22,r:{f:2,a:.3,q:.6,c:-.8},cap:2,z:"c",x:"Coast only. Fish and dolphins return, waves weaken"},
+{id:"tidal",n:"Tidal and wave energy",ch:"Marine renewables",cost:34,r:{e:4.5,c:-1.2,a:.5},cap:2,z:"c",x:"Coast only. Steady clean power from the sea"},
+{id:"carbon",n:"Carbon capture unit",ch:"Climate technology",cost:42,r:{c:-3.5,e:-1.5,a:.5},cap:1,z:"icd",x:"Pulls CO2 out of the air, uses energy"},
+{id:"airmon",n:"Air quality monitors",ch:"Environmental health",cost:12,r:{a:1.2,q:.3},cap:3,z:"ic",x:"Early warnings reduce smog harm"},
+{id:"cable",n:"Electric cable car",ch:"Clean transport",cost:32,r:{a:3,e:-1.2,c:-1.2,q:.8},cap:2,z:"ic",rev:1.5,x:"Electric ropeway: no tailpipe emissions, scenic commute"},
+{id:"metro",n:"Mass transit station",ch:"Public transport",cost:44,r:{a:4,e:-1.5,c:-2,q:1.5},cap:2,z:"ic",rev:1,x:"Metro station: moves many people per trip"},
+{id:"bikehub",n:"Bike and e-scooter hub",ch:"Active mobility",cost:12,r:{a:1.5,q:.6,c:-.5},cap:3,z:"ic",x:"Shared bikes for short trips"},
+{id:"council",n:"Neighbourhood council",ch:"Community voice",cost:10,r:{q:1.2,e:-.2},cap:3,z:"ic",x:"Residents help decide what the neighbourhood needs"},
+{id:"volunteers",n:"Volunteer center",ch:"Community action",cost:14,r:{q:1,s:.8,a:.2},cap:2,z:"ic",x:"Clean-up crews, tree planting and awareness campaigns"},
+{id:"eventspace",n:"Community plaza",ch:"Community life",cost:14,r:{q:1.4,f:.2},cap:2,z:"ic",rev:2,x:"Festivals, markets and gatherings in the open air"},
+{id:"homegarden",n:"Home gardens",ch:"Home food growing",cost:10,r:{f:1,q:.5,s:.3,w:-.2},cap:4,z:"ic",x:"Tomatoes, herbs and leafy greens grown by families at home"},
+{id:"commgarden",n:"Community garden",ch:"Home food growing",cost:14,r:{f:1.5,q:1.2,s:.3},cap:3,z:"ic",x:"Shared neighbourhood beds: vegetables, fruit and teamwork"},
+{id:"balcony",n:"Balcony hydroponics",ch:"Home food growing",cost:10,r:{f:1.2,w:-.2,e:-.3},cap:3,z:"ic",x:"Soil-free lettuce, mint and strawberries for apartments"},
+{id:"fruittrees",n:"Urban fruit trees",ch:"Home food growing",cost:9,r:{f:.8,a:.6,c:-.4},cap:4,z:"ic",x:"Fig, lemon and pomegranate trees along streets and yards"},
+{id:"farmmarket",n:"Farmers market",ch:"Food access",cost:16,r:{f:.8,q:1.4},cap:2,z:"ic",rev:3,x:"Fresh local fruit and vegetables, fairly priced"},
+{id:"foodrecover",n:"Food recovery center",ch:"Less food waste",cost:17,r:{s:2,f:.8,q:.8},cap:2,z:"ic",x:"Rescues surplus food for people, then turns scraps into compost"},
+{id:"fruitorch",n:"Mixed fruit orchard",ch:"Fruit growing",cost:18,r:{f:2.4,a:.7,c:-.8},cap:3,z:"f",x:"Figs, pomegranates, citrus and melons for vitamins and variety"},
+{id:"veggie",n:"Vegetable tunnels",ch:"Vegetable growing",cost:17,r:{f:3,w:-.8,e:-.4},cap:3,z:"f",x:"Tomatoes, cucumbers, peppers and lettuce under cover"},
+{id:"fishfarm",n:"Sustainable fish farm",ch:"Protein and food security",cost:22,r:{f:2.8,w:-.4,s:-.3,e:-.6},cap:2,z:"cf",x:"Low-impact fish pens: local protein from the sea"},
+{id:"dairy",n:"Dairy and poultry farm",ch:"Protein and food security",cost:22,r:{f:2.6,s:-.6,a:-.3,c:.6,e:-.6},cap:2,z:"f",x:"Milk, eggs and meat produced locally, with a climate cost"},
+{id:"coldchain",n:"Cold storage and packing",ch:"Less food waste",cost:20,r:{f:1.5,s:.8,e:-1},cap:2,z:"if",x:"Cooling and packing keep harvests fresh and cut waste"},
+{id:"seedbank",n:"Seed bank",ch:"Crop resilience",cost:18,r:{f:1,q:1,s:.2},cap:1,z:"f",x:"Stores local seeds, protecting against pests and crop failure"},
+{id:"farm",n:"Smart greenhouse farm",ch:"Food security",cost:26,r:{f:4,w:-.5,e:-.5},cap:3,z:"f",x:"Climate-controlled growing on the farm islet"},
+{id:"drip",n:"Drip irrigation field",ch:"Water-smart farming",cost:19,r:{f:2.5,w:1.2},cap:3,z:"f",x:"Waters roots directly and saves up to half the water"},
+{id:"saltcrop",n:"Salt-tolerant crops",ch:"Climate-smart farming",cost:18,r:{f:3,w:.8,s:.3},cap:2,z:"f",x:"Barley and quinoa that grow in salty, dry soil"},
+{id:"orchard",n:"Date palm orchard",ch:"Agroforestry",cost:18,r:{f:2,a:1,c:-1.2},cap:3,z:"f",x:"Local food, shade and carbon storage"},
+{id:"silo",n:"Grain silo and food reserve",ch:"Food security",cost:22,r:{f:2,q:1.5},cap:2,z:"f",x:"A stockpile protects people when harvests fail"},
+{id:"agrilab",n:"Agri research center",ch:"Agricultural science",cost:26,r:{f:2,s:.5,q:1},cap:2,z:"f",x:"Better seeds, soil health and training for farmers"},
+{id:"fog",n:"Fog and dew harvesters",ch:"Water-smart climate",cost:16,r:{w:2.2,e:.2},cap:3,z:"icf",x:"Mesh nets collect drinking water from humid air"},
+{id:"meters",n:"Smart water meters",ch:"Water efficiency",cost:13,r:{w:2,e:-.3},cap:3,z:"ic",x:"Leak alerts and usage feedback cut wasted water"},
+{id:"h2",n:"Green hydrogen station",ch:"Clean fuel",cost:42,r:{e:3.5,a:1.2,c:-1.5,w:-.6},cap:2,z:"icd",x:"Solar power splits water into clean hydrogen fuel"},
+{id:"evhub",n:"EV charging hub",ch:"Clean transport",cost:16,r:{a:2,e:-.8,c:-.8},cap:3,z:"ic",x:"Fast chargers make electric cars practical"},
+{id:"falaj",n:"Heritage falaj village",ch:"Culture and water heritage",cost:20,r:{q:1.6,w:.8,f:.4},cap:1,z:"icf",rev:2,x:"Traditional water channels and date gardens; visitors pay to learn"},
+{id:"bees",n:"Pollinator garden and beehives",ch:"Biodiversity",cost:12,r:{f:1.2,a:.5,q:.4},cap:3,z:"icf",x:"Bees and flowers pollinate crops and support wildlife"},
+{id:"mpa",n:"Marine protected area",ch:"Ocean protection",cost:24,r:{w:1.2,f:1.2,a:.5,c:-1.5,q:.4},cap:1,z:"c",x:"No-fishing zone: fish, coral and seagrass recover"},
+{id:"innolab",n:"Green innovation lab",ch:"Innovation",cost:32,r:{q:1.2,e:.8,a:.4,s:.4},cap:2,z:"icd",rev:3,x:"Research that makes clean technology cheaper and smarter"},
+{id:"home",n:"Family house",ch:"Housing",cost:10,r:{q:.6,s:-.2,e:-.2},cap:4,z:"ic",x:"A simple home for a family"},
+{id:"villa",n:"Villa with garden",ch:"Housing",cost:16,r:{q:.9,w:-.5,e:-.5,a:-.2},cap:3,z:"ic",x:"Roomy and comfortable, but it uses more water and power"},
+{id:"tower",n:"Residential tower",ch:"Housing",cost:22,r:{q:1,e:-.6,s:-.4},cap:3,z:"ic",x:"Many homes on a small footprint"},
+{id:"solarhome",n:"Solar home",ch:"Housing",cost:15,r:{q:.8,e:1.2,a:.2},cap:3,z:"ic",x:"A family home with panels on the roof"},
+{id:"heritagehome",n:"Heritage house with wind tower",ch:"Housing",cost:14,r:{q:1,e:.4,a:.2},cap:3,z:"ic",x:"Courtyard and wind tower cool the house without much power"},
+{id:"inn",n:"Guest house",ch:"Hotels",cost:14,r:{q:.4,s:-.3,w:-.3},cap:3,z:"ic",rev:3,x:"Small, low-impact stays for visitors"},
+{id:"lux",n:"Luxury hotel",ch:"Hotels",cost:44,r:{q:.6,w:-1.2,e:-1.2,s:-.8},cap:2,z:"ic",rev:12,x:"High income, high water and energy use"},
+{id:"resort",n:"Beach resort",ch:"Hotels",cost:38,r:{q:.8,w:-1,e:-.8,s:-.6,c:.4},cap:2,z:"c",rev:10,x:"Pools, sand and sun; pressure on the coast"},
+{id:"ecohotel",n:"Eco hotel",ch:"Hotels",cost:36,r:{q:1,w:-.4,e:.3,s:-.2},cap:3,z:"ic",rev:9,x:"Solar power, green roof and recycled water"},
+{id:"office",n:"Company office",ch:"Business",cost:20,r:{e:-.6,s:-.4,a:-.2},cap:3,z:"ic",rev:6,x:"Ordinary offices: jobs and income"},
+{id:"hq",n:"Corporate tower",ch:"Business",cost:38,r:{e:-1.2,s:-.8,a:-.3,c:.5},cap:2,z:"icd",rev:13,x:"Big income, big footprint"},
+{id:"greenco",n:"Sustainable company",ch:"Business",cost:30,r:{q:.8,e:.2,a:.2,s:-.1},cap:3,z:"ic",rev:8,x:"Green roof and solar power: profit with a small footprint"},
+{id:"greentech",n:"Green tech startup hub",ch:"Business",cost:26,r:{e:.6,q:.6,a:.3},cap:3,z:"ic",rev:5,x:"Young companies building clean technology"},
+{id:"fgar",n:"Textile factory",ch:"Industry",cost:36,r:{a:-1.2,w:-1.5,s:-1.2,c:.8},cap:3,z:"d",pol:1,rev:13,x:"Clothes and fabric; dyes pollute water"},
+{id:"ffood",n:"Food processing plant",ch:"Industry",cost:32,r:{a:-.6,w:-.8,s:-1,c:.4,f:.8},cap:3,z:"d",pol:1,rev:11,x:"Packs and cans local harvests"},
+{id:"fplast",n:"Plastics factory",ch:"Industry",cost:38,r:{a:-1.8,w:-1,s:-2.2,c:1.4},cap:3,z:"d",pol:1,rev:16,x:"Cheap goods, lots of waste"},
+{id:"fsteel",n:"Steel and metals plant",ch:"Industry",cost:52,r:{a:-3,w:-1.2,s:-2,c:2.8},cap:2,z:"d",pol:1,rev:22,x:"Highest income and highest pollution"},
+{id:"fgreen",n:"Circular recycling factory",ch:"Industry",cost:40,r:{a:-.4,s:1.2,w:-.5},cap:3,z:"d",rev:12,x:"Turns waste into new products"},
+{id:"tomato",n:"Tomato field",ch:"My Farm: vegetables",cost:14,r:{f:2.4,w:-.8},cap:3,z:"f",x:"Staked tomato rows"},
+{id:"cucumber",n:"Cucumber tunnels",ch:"My Farm: vegetables",cost:14,r:{f:2.2,w:-.7},cap:3,z:"f",x:"Cool, covered beds"},
+{id:"pepper",n:"Pepper and chilli beds",ch:"My Farm: vegetables",cost:13,r:{f:2,w:-.5},cap:3,z:"f",x:"Red, yellow and green peppers"},
+{id:"eggplant",n:"Eggplant and squash",ch:"My Farm: vegetables",cost:13,r:{f:2,w:-.5},cap:3,z:"f",x:"Hardy summer vegetables"},
+{id:"leafy",n:"Leafy greens beds",ch:"My Farm: vegetables",cost:11,r:{f:1.8,w:-.4,s:.2},cap:3,z:"f",x:"Lettuce, spinach and herbs"},
+{id:"fig",n:"Fig grove",ch:"My Farm: fruit",cost:15,r:{f:1.8,a:.5,c:-.6},cap:3,z:"f",x:"Figs and shade"},
+{id:"pomegranate",n:"Pomegranate grove",ch:"My Farm: fruit",cost:15,r:{f:1.8,a:.5,c:-.6},cap:3,z:"f",x:"Hardy trees with ruby fruit"},
+{id:"citrus",n:"Citrus grove",ch:"My Farm: fruit",cost:16,r:{f:2,a:.6,w:-.7,c:-.6},cap:3,z:"f",x:"Lemons and oranges: vitamin C"},
+{id:"mango",n:"Mango and banana grove",ch:"My Farm: fruit",cost:18,r:{f:2.4,a:.6,w:-1.2,c:-.6},cap:3,z:"f",x:"Sweet and thirsty tropical fruit"},
+{id:"melon",n:"Melon and watermelon field",ch:"My Farm: fruit",cost:14,r:{f:2.2,w:-1},cap:3,z:"f",x:"Refreshing summer crops"},
+{id:"nurveg",n:"Vegetable seedling nursery",ch:"My Farm: seedlings",cost:12,r:{f:1.2,q:.3},cap:3,z:"icf",x:"Young plants for farms and home gardens"},
+{id:"nurfruit",n:"Fruit tree nursery",ch:"My Farm: seedlings",cost:14,r:{f:1.2,a:.6,c:-.5},cap:3,z:"icf",x:"Saplings of fig, citrus and pomegranate"},
+{id:"nurshade",n:"Shade tree and palm nursery",ch:"My Farm: seedlings",cost:13,r:{a:1,c:-1,q:.4},cap:3,z:"icf",x:"Date palm and shade tree saplings for streets and parks"},
+{id:"nurmang",n:"Mangrove nursery",ch:"My Farm: seedlings",cost:14,r:{a:.8,w:.6,c:-1.2},cap:2,z:"cf",x:"Seedlings to grow new mangrove forests"},
+{id:"nurherb",n:"Herb and medicinal plant nursery",ch:"My Farm: seedlings",cost:11,r:{f:.8,q:.5},cap:3,z:"icf",x:"Mint, basil, sage and aloe"},
+{id:"police",n:"Police station",ch:"Public safety",cost:20,r:{q:1.5,e:-.5},cap:2,z:"ic",x:"Safety and public order raise Equity"},
+{id:"fire",n:"Fire and rescue station",ch:"Public safety",cost:22,r:{q:1.2,a:.3,e:-.5},cap:2,z:"ic",x:"Fast response protects people and homes"},
+{id:"library",n:"Public library",ch:"Education and culture",cost:16,r:{q:1.5,s:.3,e:-.3},cap:2,z:"ic",x:"Free knowledge for everyone"},
+{id:"mosque",n:"Community mosque",ch:"Community",cost:18,r:{q:1.8,e:-.2},cap:2,z:"ic",x:"A gathering place that strengthens the community"},
+{id:"townhall",n:"City hall",ch:"Governance",cost:26,r:{q:2,e:-.6},cap:1,z:"ic",x:"Better planning and fair services"},
+{id:"hospital",n:"Hospital",ch:"Public health",cost:34,r:{q:2,e:-1,s:-.8},cap:1,z:"ic",x:"Health care raises Equity"}
+];
+A.forEach(a=>{if(a.cap>1)a.cap*=2});
+const farmStripes=[];
+const TOP=.92,GRANT=110,START=640,IX=52,IZ=-34,AX=-53,AZ=-32,MR=29,IR=17.5,IZR=15.5;
+const PO={tax:{n:"Carbon tax",cash:10,co2:-2,m:{q:-1}},ban:{n:"Plastic ban",cash:-6,m:{s:4}},water:{n:"Water-saving rules",cash:-4,m:{w:4}},pass:{n:"Free transit pass",cash:-12,m:{a:3,q:1.5}},sub:{n:"Green subsidy",cash:-10,m:{e:2.5,f:2}}};
+let S,dyn,puffs=[],buses=[],spin=[],th=.6,drag=0,lx=0,sx=0,sy=0,fx=0,sel=null,G;
+const TH={},ERR={};
+/* ---------- 3D world ---------- */
+const cv=$("cv"),R=window.R0=new THREE.WebGLRenderer({canvas:cv,antialias:true,preserveDrawingBuffer:true}),sc=new THREE.Scene(),cam=new THREE.PerspectiveCamera(42,1,.1,900);
+R.shadowMap.enabled=true;R.shadowMap.type=THREE.PCFSoftShadowMap;
+const hemi=new THREE.HemisphereLight(0xffffff,0x6a8a6a,.6);sc.add(hemi);
+const sun=new THREE.DirectionalLight(0xffffff,.8);sun.position.set(18,30,8);sun.castShadow=true;sun.shadow.mapSize.set(2048,2048);
+Object.assign(sun.shadow.camera,{left:-48,right:48,top:48,bottom:-48,near:1,far:160});sc.add(sun);sun.shadow.bias=-.0004;sun.shadow.normalBias=.03;const fill=new THREE.DirectionalLight(0xbfd8ff,.3);fill.position.set(-20,12,-10);sc.add(fill);
+const seaG=new THREE.PlaneGeometry(900,900,96,96);seaG.rotateX(-Math.PI/2);
+const sea=new THREE.Mesh(seaG,new THREE.MeshLambertMaterial({color:0x2aa0c4,flatShading:true,transparent:true,opacity:.82}));sc.add(sea);
+const L=(c,o)=>new THREE.MeshStandardMaterial(Object.assign({color:c,roughness:.8,metalness:.04},o||{}));
+function land(x,z,rt,rb){const a=new THREE.Mesh(new THREE.CylinderGeometry(rt+.8,rb+.8,2,48),L(0xe9dfc6));a.position.set(x,-.2,z);a.receiveShadow=true;sc.add(a);const g=new THREE.Mesh(new THREE.CylinderGeometry(rt,rt+.4,.14,48),L(0x6db35a));g.position.set(x,.87,z);g.receiveShadow=true;sc.add(g)}
+land(0,0,MR,MR+2);land(IX,IZ,IR,IR+.9);land(AX,AZ,IR,IR+.9);
+const ang=Math.atan2(IZ,IX),bl=Math.hypot(IX,IZ)-(MR+.3)-(IR+.8),b0=MR+.3;
+{const b=new THREE.Mesh(new THREE.BoxGeometry(bl+1.5,.16,2.2),L(0x6b6f73));b.position.set(Math.cos(ang)*(b0+bl/2),.86,Math.sin(ang)*(b0+bl/2));b.rotation.y=-ang;b.receiveShadow=true;sc.add(b)}
+{const aa=Math.atan2(AZ,AX),bl2=Math.hypot(AX,AZ)-(MR+.3)-(IR+.8);const b=new THREE.Mesh(new THREE.BoxGeometry(bl2+1.5,.16,2.2),L(0x8a7a5a));b.position.set(Math.cos(aa)*(MR+.3+bl2/2),.86,Math.sin(aa)*(MR+.3+bl2/2));b.rotation.y=-aa;b.receiveShadow=true;sc.add(b)}
+[-15,-12,-9,-6,-3,0,3,6,9,12,15].forEach((dz,i)=>{const w=2*Math.sqrt(IR*IR-dz*dz)*.9,c=i%2?0xd6c46e:0x8fcf6a;const m=new THREE.Mesh(new THREE.BoxGeometry(w,.02,1.6),L(c));m.position.set(AX,TOP+.02,AZ+dz);m.receiveShadow=true;sc.add(m);farmStripes.push(m)});
+/* plots: ring 0 inner, 1 middle, 2 coast, 3 industrial islet */
+const SL=[];[[8,4.7,.2,0,0,0],[10,7,.1,1,0,0],[8,8.4,.4,2,0,0],[6,2.9,.3,3,IX,IZ]].forEach(([n,r,o,ring,cx,cz])=>{for(let k=0;k<n;k++){const a=o+k*2*Math.PI/n;SL.push({a,ring,zone:["i","i","c","d"][ring],x:cx+Math.cos(a)*r,z:cz+Math.sin(a)*r})}});
+const pads=new THREE.Group();sc.add(pads);
+SL.forEach((s,k)=>{const p=new THREE.Mesh(new THREE.CylinderGeometry(1.25,1.25,.05,28),new THREE.MeshBasicMaterial({color:0x4cff9a,transparent:true,opacity:.4,depthWrite:false}));p.position.set(s.x,TOP+.05,s.z);p.userData.k=k;p.visible=false;pads.add(p)});
+const mk=(g,c,x,y,z,o)=>{const m=new THREE.Mesh(g,L(c,o));m.position.set(x,y,z);m.castShadow=m.receiveShadow=true;G.add(m);return m};
+const bx=(w,h,d,c,x,y,z,o)=>mk(new THREE.BoxGeometry(w,h,d),c,x,y+h/2,z,o);
+const cy=(rt,rb,h,c,x,y,z,s,o)=>mk(new THREE.CylinderGeometry(rt,rb,h,s||12),c,x,y+h/2,z,o);
+const puff=(x,y0,z,i)=>{const p=mk(new THREE.SphereGeometry(.22,8,6),0x9a9a9a,0,y0,z,{transparent:true,opacity:.6});p.userData={ph:i/4,x,y0,z};puffs.push(p)};
+const MD={
+rain(){bx(2,.1,1.3,0xb8c4cc,0,1.1,-.2).rotation.x=.2;[-.6,.6].forEach(x=>{cy(.42,.42,1,0x4f9bd4,x,0,.45,18);cy(.44,.44,.06,0x2f6f9f,x,1,.45,18)});bx(.5,.1,.5,0x4f9bd4,0,0,-.6)},
+desal(){bx(1.8,1,1.2,0xcfd8dc,0,0,0);bx(1.9,.1,1.3,0x90a4ae,0,1,0);[-.5,.4].forEach(x=>cy(.28,.28,1.6,0x90a4ae,x,1.1,-.1,14));mk(new THREE.CylinderGeometry(.09,.09,3.2,8),0x455a64,2.3,-.45,0).rotation.z=Math.PI/2},
+wtp(){bx(1,.7,.7,0xcfd8dc,-.2,0,-.7);[-.55,.55].forEach((x,i)=>{cy(.68,.68,.35,0x8a949a,x,0,.45,28);cy(.58,.58,.3,i?0x7fd1b0:0x6fb7d6,x,.08,.45,28)});cy(.06,.06,.7,0x607d8b,0,.2,.05,6)},
+recy(){bx(1.7,.8,1.2,0x43a05f,0,0,0);bx(1.8,.1,1.3,0x2c6e42,0,.8,0);[0xe6c34a,0x4a90c8,0x7d7d7d].forEach((c,i)=>cy(.16,.16,.35,c,-.5+i*.5,.9,.1,10))},
+wtx(){bx(1.7,.8,1.1,0x6d8b74,0,0,-.3);bx(1.8,.1,1.2,0x44604b,0,.8,-.3);[-.5,.5].forEach(x=>mk(new THREE.SphereGeometry(.5,14,8,0,6.283,0,1.571),0x9bb5a3,x,0,.8));cy(.12,.15,1.5,0x555555,.7,.8,-.5,10);puff(.7,2.4,-.5,0);puff(.7,2.4,-.5,2)},
+comp(){[[-.5,-.3],[.5,-.3],[0,.5]].forEach(([x,z])=>{cy(.35,.6,.4,0x6b4a2b,x,0,z,10);cy(0,.3,.35,0x4e8f3a,x,.4,z,8)})},
+solar(){for(let i=0;i<2;i++)for(let j=0;j<2;j++){const x=-.55+i*1.1,z=-.5+j*1.1;bx(.95,.05,.7,0x1c3f8f,x,.5,z).rotation.x=-.5;cy(.04,.04,.5,0x999999,x,0,z,6)}},
+wind(){[-.7,.7].forEach(z=>{cy(.06,.12,2.7,0xeeeeee,0,0,z,10);bx(.35,.18,.18,0xdddddd,0,2.7,z);const h=new THREE.Group();h.position.set(.22,2.8,z);G.add(h);for(let i=0;i<3;i++){const pv=new THREE.Group();pv.rotation.x=i*2.094;const b=new THREE.Mesh(new THREE.BoxGeometry(.04,1.15,.14),L(0xf7f7f7));b.position.y=.58;b.castShadow=true;pv.add(b);h.add(pv)}spin.push(h)})},
+gas(){bx(1.7,.9,1.2,0x7a7a7a,0,0,0);[-.4,.4].forEach(x=>{cy(.15,.2,1.9,0x4a4a4a,x,.9,.3,10);cy(.17,.17,.12,0xc0392b,x,2.4,.3,10)});for(let j=0;j<4;j++)puff(j%2?.4:-.4,2.9,.3,j)},
+bus(){bx(1.8,.6,1.3,0x2fb34a,0,0,0);bx(1.9,.08,1.4,0x1e7a33,0,.6,0);bx(.9,.35,.45,0xffffff,.1,.08,.9)},
+vf(){for(let i=0;i<4;i++){bx(1.25,.42,1.25,0xa5e8b5,0,i*.46,0,{transparent:true,opacity:.75});bx(.9,.1,.9,0x3fae5a,0,i*.46+.1,0)}bx(.12,1.85,.12,0x607d8b,-.65,0,-.65);bx(.12,1.85,.12,0x607d8b,.65,0,.65)},
+mang(){[[0,0],[.7,.4],[-.6,.5],[.3,-.7],[-.7,-.4]].forEach(([x,z])=>{cy(.05,.05,.5,0x5a3d2b,x,0,z,6);cy(0,.45,.9,0x1f6b3a,x,.45,z,8)})},
+edu(){bx(1.9,.8,1.1,0xf2cf63,0,0,0);cy(0,1.1,.5,0xc0553d,0,.8,0,4).rotation.y=Math.PI/4;cy(.02,.02,1.3,0xeeeeee,1.1,0,.5,6);bx(.4,.25,.02,0xdd3333,1.3,1,.5)},
+fair(){bx(1.6,.65,1,0xe9a6a6,0,0,-.3);cy(0,1.1,.4,0x8d6e63,0,.65,-.3,4).rotation.y=Math.PI/4;cy(.5,.55,.14,0xbbbbbb,0,0,.75,20);cy(.08,.08,.5,0x6fb7d6,0,.14,.75,8);[-.9,.9].forEach(x=>{cy(.04,.04,.3,0x5a3d2b,x,0,.8,5);cy(0,.3,.7,0x3f9b5c,x,.3,.8,7)})},
+roof(){bx(1.8,1,1.2,0xd8d2c6,0,0,0);bx(1.9,.1,1.3,0x8a8f94,0,1,0);[0,.5].forEach(x=>bx(.38,.18,1,0x4e9f3f,x,1.1,0));bx(.6,.45,.7,0xcfeee0,-.6,1.1,0,{transparent:true,opacity:.7})},
+green(){bx(1.3,1.9,1.1,0xe8eee2,0,0,0);[0,1].forEach(i=>{bx(1.4,.12,.3,0x4e9f3f,0,.55+i*.65,.6);bx(1.4,.12,.3,0x4e9f3f,0,.55+i*.65,-.6)});bx(1.4,.1,1.2,0x2b6b3a,0,1.9,0);bx(.9,.05,.6,0x1c3f8f,0,2,0).rotation.x=-.3},
+eco(){bx(.9,1.7,.9,0x8fb7d6,-.6,0,-.3,{transparent:true,opacity:.85});bx(.8,1.2,.8,0x9fc3dc,.5,0,-.4,{transparent:true,opacity:.85});bx(1.8,.45,.8,0xe3e6e8,0,0,.7);bx(1.9,.08,.9,0x5fae55,0,.45,.7)},
+grid(){[-.6,0,.6].forEach(x=>{bx(.5,.65,.9,0xe6e9ec,x,0,0);bx(.5,.08,.9,0x4cc585,x,.65,0)});cy(.05,.08,1.7,0x666666,0,0,.9,6);bx(1.2,.06,.06,0x666666,0,1.5,.9)},
+park(){cy(1.1,1.1,.08,0x69b25a,0,0,0,24);cy(.45,.45,.1,0x5aa9d6,.3,0,.3,20);[[-.6,-.5],[.7,-.5],[-.7,.4],[.1,-.8],[.6,.8]].forEach(([x,z])=>{cy(.05,.05,.4,0x5a3d2b,x,0,z,6);cy(0,.4,.9,0x2f8f4a,x,.4,z,8)});bx(.5,.1,.15,0x8d6e63,-.2,.15,.9)},
+hotel(){bx(1.9,1.3,.9,0xf5efe2,0,0,-.4);[0,1].forEach(i=>bx(2,.1,.25,0x4e9f3f,0,.4+i*.45,.15));bx(2,.08,1,0x8d6e63,0,1.3,-.4);bx(1.2,.05,.5,0x1c3f8f,-.2,1.38,-.4).rotation.x=-.3;bx(1,.04,.8,0xe6d3a8,.6,0,.8);cy(.5,.5,.06,0x4fb3e0,.6,.04,.8,20);cy(.05,.07,.9,0x8d6e63,-.7,0,.8,6);mk(new THREE.SphereGeometry(.4,8,6),0x3f9b4a,-.7,1,.8).scale.y=.4},
+tram(){bx(2.3,.05,.6,0x555a5f,0,0,0);bx(1.5,.5,.42,0xf2f2f2,0,.08,0);bx(1.5,.1,.44,0x2fb34a,0,.28,0);bx(1.5,.05,.42,0x888888,0,.58,0);bx(.5,.2,.02,0x6fb7d6,.3,.3,.22);cy(.03,.03,1.1,0x666666,1,0,.4,6);bx(.06,.06,.7,0x666666,1,1.1,.1)},
+badgir(){bx(1.3,.5,1.3,0xe8d3b0,0,0,0);bx(.55,1.4,.55,0xd9c08f,0,.5,0);bx(.7,.12,.7,0xb9996a,0,1.9,0);[-.28,.28].forEach(x=>bx(.02,.5,.4,0x5a4630,x,1.2,0));bx(.4,.45,.02,0x5a4630,0,.65,.28)},
+market(){[0,1,2].forEach(i=>{const x=-.7+i*.7,c=[0xe74c3c,0xf1c40f,0x2ecc71][i];bx(.5,.3,.45,0x8d6e63,x,0,0);bx(.6,.06,.55,c,x,.75,0);cy(.025,.025,.75,0x5a3d2b,x-.26,0,.22,5);cy(.025,.025,.75,0x5a3d2b,x+.26,0,.22,5);cy(.1,.1,.08,0xe67e22,x,.3,.1,8)})},
+grey(){cy(.5,.5,.9,0x7fb7a4,-.4,0,0,16);cy(.52,.52,.06,0x4f8f7c,-.4,.9,0,16);bx(.9,.08,.08,0x555555,.3,.35,0);bx(.9,.15,.8,0x6b4a2b,.65,0,.3);[0,.35,.7].forEach(x=>cy(0,.2,.35,0x4e8f3a,.35+x,.15,.3,6))},
+flood(){bx(2.3,.6,.4,0xb8c0c6,0,0,0);bx(2.3,.15,.5,0x8a949a,0,.6,-.1);[-.7,0,.7].forEach(x=>bx(.3,.5,.05,0xf1c40f,x,.05,.22))},
+school(){bx(1.9,.65,.9,0xf3d98b,0,0,-.2);bx(.6,1,.6,0xe8b94a,0,0,-.2);cy(0,.45,.45,0xc0553d,0,1,-.2,4).rotation.y=Math.PI/4;bx(1.6,.04,.5,0x1c3f8f,0,.65,-.2);bx(1.3,.03,.6,0x6aa84f,0,0,.7);cy(.02,.02,1,0xeeeeee,-.9,0,.5,5);bx(.3,.18,.02,0x2fb34a,-.75,.8,.5)},
+shops(){[0,1,2].forEach(i=>{const x=-.7+i*.7;bx(.62,.55,.7,[0xf5e6c8,0xd9e4ee,0xf2d4d4][i],x,0,0);bx(.66,.08,.4,[0xe74c3c,0x3498db,0x2ecc71][i],x,.4,.4);bx(.3,.25,.02,0x8ecae6,x,.1,.36)});bx(2.2,.06,.8,0x8a8f94,0,.55,0)},
+souq(){bx(2.2,.5,.9,0xe0c08a,0,0,0);[-.7,0,.7].forEach((x,i)=>{bx(.4,.35,.05,0x6b4a2b,x,.05,.46);bx(.5,.04,.4,[0xc0392b,0xf1c40f,0x16a085][i],x,.62,.2)});bx(2.3,.08,1,0x8d6e63,0,.5,0);cy(.04,.04,1.1,0x6b4a2b,1,0,-.3,6);mk(new THREE.SphereGeometry(.1,8,6),0xf1c40f,1,1.15,-.3)},
+mall(){bx(2.4,1.1,1.5,0xe9ecef,0,0,0);bx(2.2,.8,.05,0x8fc3e0,0,.15,.78,{transparent:true,opacity:.8});bx(2.2,.05,1.3,0x1c3f8f,0,1.1,0);bx(.8,.2,.05,0xe67e22,0,.9,.79);bx(2.4,.03,.8,0x555a5f,0,0,1.15);[-.7,.1,.8].forEach((x,i)=>bx(.35,.14,.2,[0xe74c3c,0x3498db,0xf1c40f][i],x,.03,1.15))},
+fun(){bx(1.9,.06,1.3,0xd8cdb9,0,0,0);[-.2,.2].forEach(z=>cy(.04,.06,1.45,0x777777,0,.06,z,6));const h=new THREE.Group();h.position.set(0,1.5,0);G.add(h);const t=new THREE.Mesh(new THREE.TorusGeometry(.95,.04,6,28),L(0xe74c3c));t.rotation.y=Math.PI/2;h.add(t);for(let i=0;i<3;i++){const pv=new THREE.Group();pv.rotation.x=i*Math.PI/3;const b=new THREE.Mesh(new THREE.BoxGeometry(.03,1.9,.03),L(0xdddddd));pv.add(b);h.add(pv)}for(let i=0;i<8;i++){const a=i*Math.PI/4,c=new THREE.Mesh(new THREE.BoxGeometry(.16,.16,.16),L([0xf1c40f,0x3498db,0x2ecc71,0xe67e22][i%4]));c.position.set(0,Math.cos(a)*.95,Math.sin(a)*.95);h.add(c)}spin.push(h);bx(.5,.35,.4,0xe67e22,.7,.06,.4)},
+hydro(){[-.6,0,.6].forEach((x,i)=>{cy(.28,.28,1.3,0xe8eef2,x,0,0,12);for(let j=0;j<5;j++){const a=j*1.26+i,y=.25+(j%3)*.35;mk(new THREE.SphereGeometry(.13,6,5),0x5fd16a,x+Math.cos(a)*.3,y,Math.sin(a)*.3)}cy(0,.28,.15,0x5fd16a,x,1.3,0,6)});bx(1.9,.08,.5,0x607d8b,0,0,.7);cy(.12,.12,.35,0x4a90c8,.7,.08,.7,10)},
+aqua(){[-.5].forEach(x=>{cy(.5,.5,.45,0x3c8dbc,x,0,0,20);cy(.45,.45,.02,0x7fd0f0,x,.44,0,20);bx(.12,.04,.06,0xff9f43,x+.1,.46,.1);bx(.12,.04,.06,0xff9f43,x-.15,.46,-.12)});bx(.8,.35,.8,0x607d8b,.6,0,0);[0,1,2].forEach(i=>bx(.18,.18,.7,0x5fd16a,.35+i*.25,.35,0));bx(1,.04,.9,0xcfeee0,.6,.95,0,{transparent:true,opacity:.5});[[.15,-.4],[1.05,-.4],[.15,.4],[1.05,.4]].forEach(([x,z])=>cy(.03,.03,.95,0x888888,x,0,z,5))},
+fact(){bx(2,.8,1.2,0x9e9e9e,0,0,0);[-.65,0,.65].forEach(x=>bx(.55,.08,1.25,0x6f6f6f,x,.8,0).rotation.z=.35);bx(.5,.5,.06,0x4a6fa5,-.5,.15,.62);[.55,.9].forEach((x,i)=>{cy(.14,.18,1.7,0x6d4c41,x,.8,-.3,10);puff(x,2.55,-.3,i*2+i)})}
+};
+const TEXC={},winMats=[];const mats=o=>Array.isArray(o.material)?o.material:[o.material];
+function winTex(base,glass,cols,rows){const k=base+glass+cols+"x"+rows;if(TEXC[k])return TEXC[k];const c=document.createElement("canvas");c.width=256;c.height=256;const x=c.getContext("2d");x.fillStyle=base;x.fillRect(0,0,256,256);const cw=256/cols,rh=256/rows;for(let i=0;i<cols;i++)for(let j=0;j<rows;j++){x.fillStyle=glass;x.fillRect(i*cw+cw*.18,j*rh+rh*.2,cw*.64,rh*.55);x.fillStyle="rgba(255,255,255,.35)";x.fillRect(i*cw+cw*.18,j*rh+rh*.2,cw*.64,rh*.12)}const ec=document.createElement("canvas");ec.width=256;ec.height=256;const ex=ec.getContext("2d");ex.fillStyle="#000";ex.fillRect(0,0,256,256);ex.fillStyle="#ffd27a";for(let i=0;i<cols;i++)for(let j=0;j<rows;j++)ex.fillRect(i*cw+cw*.18,j*rh+rh*.2,cw*.64,rh*.55);const t=new THREE.CanvasTexture(c);t.anisotropy=4;t.eTex=new THREE.CanvasTexture(ec);return TEXC[k]=t}
+function wb(w,h,d,c,x,y,z,cols,rows,glass){const css="#"+c.toString(16).padStart(6,"0"),tx=winTex(css,glass||"#6fa8d6",cols,rows),side=new THREE.MeshStandardMaterial({map:tx,roughness:.55,metalness:.1,emissive:new THREE.Color(0xffd27a),emissiveMap:tx.eTex,emissiveIntensity:0}),top=L(c),m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),[side,side,top,top,side,side]);m.position.set(x,y+h/2,z);m.castShadow=m.receiveShadow=true;G.add(m);winMats.push(side);return m}
+function house(x,z,h,i){wb(.62,h,.55,[0xf4f4f2,0xe9e6df,0xdfe5e8][i%3],x,TOP,z,2,Math.max(1,Math.round(h/.3)),"#7ea6c4");bx(.5,.18,.5,0x9a7b5c,x+.1,TOP+h,z-.02);bx(.74,.04,.68,0xd8d8d6,x,TOP+h+.18,z);gl(.34,.03,.24,0x1c3f8f,x-.08,TOP+h+.22,z);bx(.16,.26,.03,0x5a4a3c,x-.15,TOP,z+.28)}
+const gl=(w,h,d,c,x,y,z)=>{const m=bx(w,h,d,c,x,y,z);m.material=new THREE.MeshPhongMaterial({color:c,shininess:100,specular:0xaaccee});return m};
+const ac=(x,y,z)=>{bx(.22,.12,.22,0xbfc5ca,x,y,z);cy(.07,.07,.03,0x555555,x,y+.12,z,12)};
+Object.assign(MD,{
+solar(){for(let i=0;i<2;i++)for(let j=0;j<2;j++){const x=-.55+i*1.1,z=-.5+j*1.1;gl(.98,.05,.72,0x1c3f8f,x,.52,z).rotation.x=-.5;bx(.99,.02,.03,0xdddddd,x,.53,z).rotation.x=-.5;cy(.035,.035,.55,0x8a8f94,x,0,z,8)}bx(.4,.3,.3,0xe6e9ec,.9,0,.95)},
+wind(){[-.7,.7].forEach(z=>{cy(.2,.24,.1,0x8a8f94,0,0,z,20);cy(.05,.12,2.7,0xf4f4f4,0,.1,z,20);cy(.06,.065,.12,0xe74c3c,0,1.6,z,20);bx(.42,.2,.2,0xe9e9e9,0,2.7,z);const h=new THREE.Group();h.position.set(.24,2.8,z);G.add(h);mk(new THREE.SphereGeometry(.1,12,10),0xdddddd,0,0,0);for(let i=0;i<3;i++){const pv=new THREE.Group();pv.rotation.x=i*2.094;const b=new THREE.Mesh(new THREE.BoxGeometry(.03,1.2,.15),L(0xfafafa,{roughness:.4}));b.position.y=.62;b.rotation.y=.2;b.castShadow=true;pv.add(b);h.add(pv)}spin.push(h)})},
+green(){wb(1.3,1.9,1.1,0xeae6dc,0,0,0,3,7,"#5d8fb5");[0,1,2].forEach(i=>{[.68,-.68].forEach(z=>{bx(1.45,.07,.3,0xd8d2c6,0,.58+i*.55,z);bx(1.4,.12,.12,0x4e9f3f,0,.65+i*.55,z*1.15)})});bx(1.4,.1,1.2,0x4e7d4a,0,1.9,0);gl(.9,.05,.6,0x1c3f8f,0,2.02,0).rotation.x=-.25;bx(.3,.5,.05,0x5a3d2b,0,0,.56);ac(.4,2,.3)},
+eco(){wb(.9,1.9,.9,0x9fb8c8,-.6,0,-.3,4,9,"#3d6f98");wb(.8,1.3,.8,0xa9c0cf,.5,0,-.4,3,6,"#3d6f98");wb(1.9,.45,.8,0xe3e6e8,0,0,.7,6,1,"#6fa8d6");bx(1.9,.08,.9,0x5fae55,0,.45,.7);gl(.6,.04,.4,0x1c3f8f,-.6,1.92,-.3);ac(.5,1.3,-.4);[-.7,0,.7].forEach(x=>{cy(.03,.04,.3,0x5a3d2b,x,.5,1.05,6);cy(0,.2,.4,0x2f8f4a,x,.75,1.05,8)})},
+hotel(){wb(1.9,1.3,.9,0xf5efe2,0,0,-.4,6,4,"#7fb3d5");[0,1].forEach(i=>bx(2,.1,.25,0x4e9f3f,0,.4+i*.45,.15));bx(2,.08,1,0x8d6e63,0,1.3,-.4);gl(1.2,.05,.5,0x1c3f8f,-.2,1.38,-.4).rotation.x=-.3;bx(1,.04,.8,0xe6d3a8,.6,0,.8);cy(.5,.5,.06,0x4fb3e0,.6,.04,.8,24);[-.1,.25].forEach(x=>bx(.12,.04,.28,0xffffff,.1+x*.1+.1,.05,1.1));cy(.04,.07,.9,0x8d6e63,-.7,0,.8,8);mk(new THREE.SphereGeometry(.4,10,8),0x3f9b4a,-.7,1,.8).scale.y=.4;bx(.5,.35,.05,0xe67e22,.7,.5,-.82)},
+mall(){wb(2.4,1.1,1.5,0xe9ecef,0,0,0,8,3,"#5d8fb5");gl(.9,.7,.05,0x8fc3e0,0,.02,.78);gl(2.2,.05,1.3,0x1c3f8f,0,1.1,0);bx(.8,.2,.05,0xe67e22,0,.9,.8);bx(2.4,.03,.8,0x555a5f,0,0,1.15);[-.8,0,.8].forEach((x,i)=>{const c=[0xe74c3c,0x3498db,0xf1c40f][i];bx(.34,.1,.2,c,x,.03,1.15);bx(.2,.08,.16,0xdfe6ea,x,.13,1.15)});ac(-.8,1.15,-.3);ac(.7,1.15,.2)},
+school(){wb(1.9,.65,.9,0xf3d98b,0,0,-.2,6,2);wb(.6,1,.6,0xe8b94a,0,0,-.2,2,3);cy(0,.45,.45,0xc0553d,0,1,-.2,4).rotation.y=Math.PI/4;cy(.12,.12,.03,0xffffff,0,.78,.12,20).rotation.x=Math.PI/2;gl(1.6,.04,.5,0x1c3f8f,0,.65,-.2);bx(1.3,.03,.6,0x6aa84f,0,0,.7);bx(1.3,.02,.04,0xffffff,0,.03,.7);cy(.02,.02,1,0xeeeeee,-.9,0,.5,6);bx(.3,.18,.02,0x2fb34a,-.75,.8,.5)},
+shops(){[0,1,2].forEach(i=>{const x=-.7+i*.7;wb(.62,.55,.7,[0xf5e6c8,0xd9e4ee,0xf2d4d4][i],x,0,0,2,2,"#9fd0e8");bx(.68,.08,.42,[0xe74c3c,0x3498db,0x2ecc71][i],x,.4,.42);bx(.28,.12,.03,0xffffff,x,.5,.3)});bx(2.2,.06,.8,0x8a8f94,0,.55,0)},
+desal(){wb(1.8,1,1.2,0xcfd8dc,0,0,0,5,2,"#6a8fa8");bx(1.9,.1,1.3,0x90a4ae,0,1,0);[-.5,.4].forEach(x=>{cy(.28,.28,1.6,0x90a4ae,x,1.1,-.1,24);cy(.29,.29,.08,0x607d8b,x,1.9,-.1,24)});mk(new THREE.CylinderGeometry(.09,.09,3.2,12),0x455a64,2.3,-.45,0).rotation.z=Math.PI/2},
+recy(){wb(1.7,.8,1.2,0x43a05f,0,0,0,4,2,"#b9e4c9");bx(1.8,.1,1.3,0x2c6e42,0,.8,0);[0xe6c34a,0x4a90c8,0x7d7d7d].forEach((c,i)=>{cy(.17,.17,.35,c,-.5+i*.5,.9,.1,16);cy(.18,.18,.04,0x333333,-.5+i*.5,1.25,.1,16)})},
+gas(){wb(1.7,.9,1.2,0x7a7a7a,0,0,0,3,1,"#4a5560");[-.4,.4].forEach(x=>{cy(.17,.2,.7,0xeeeeee,x,.9,.3,18);cy(.15,.17,.4,0xc0392b,x,1.6,.3,18);cy(.13,.15,.4,0xeeeeee,x,2,.3,18)});for(let j=0;j<4;j++)puff(j%2?.4:-.4,2.5,.3,j)},
+fact(){wb(2,.8,1.2,0x9e9e9e,0,0,0,5,2,"#3d4b57");[-.65,0,.65].forEach(x=>bx(.55,.08,1.25,0x6f6f6f,x,.8,0).rotation.z=.35);bx(.5,.5,.06,0x4a6fa5,-.5,.05,.62);[.55,.9].forEach((x,i)=>{cy(.14,.18,1.1,0x6d4c41,x,.8,-.3,16);cy(.15,.15,.12,0xc0392b,x,1.9,-.3,16);puff(x,2.1,-.3,i*2+i)})},
+tram(){bx(2.3,.05,.6,0x555a5f,0,0,0);wb(1.5,.5,.42,0xf2f2f2,0,.08,0,6,1,"#4a7ea8");bx(1.52,.08,.44,0x2fb34a,0,.08,0);bx(1.5,.05,.42,0x888888,0,.58,0);cy(.03,.03,1.1,0x666666,1,0,.4,8);bx(.06,.06,.7,0x666666,1,1.1,.1)}
+});
+Object.assign(MD,{
+edu(){wb(1.9,.7,.9,0xf2f2f0,0,0,-.2,6,2,"#6fa8d6");bx(2,.06,1,0x9a7b5c,0,.75,-.1);gl(.7,.9,.5,0x8fc3e0,.6,0,.5);gl(1.6,.04,.5,0x1c3f8f,-.1,.82,-.2);cy(.02,.02,1,0xeeeeee,-.9,0,.5,6);bx(.3,.18,.02,0x2fb34a,-.75,.8,.5)},
+school(){wb(1.9,.65,.9,0xf4f4f2,0,0,-.2,6,2,"#6fa8d6");wb(.8,.5,.7,0xe8b94a,.45,.65,-.2,3,2,"#6fa8d6");bx(2,.06,1,0x9a7b5c,0,.65,-.2);gl(.9,.04,.5,0x1c3f8f,-.5,.72,-.2);bx(1.3,.03,.6,0x6aa84f,0,0,.7);bx(1.3,.02,.04,0xffffff,0,.03,.7);cy(.02,.02,1,0xeeeeee,-.9,0,.5,6);bx(.3,.18,.02,0x2fb34a,-.75,.8,.5)},
+vf(){bx(1.3,.1,1.3,0x607d8b,0,0,0);for(let i=0;i<4;i++){bx(1.2,.4,1.2,0xa5e8b5,0,.1+i*.46,0,{transparent:true,opacity:.7});const l=bx(1.22,.03,1.22,0xd05cf0,0,.5+i*.46,0);l.material.emissive.set(0xaa44dd)}bx(1.3,.08,1.3,0x607d8b,0,1.95,0);gl(.9,.04,.9,0x1c3f8f,0,2.05,0)},
+bus(){bx(2.2,.06,1.5,0xcfd3d6,0,0,0);[-1,1].forEach(x=>[-.6,.6].forEach(z=>bx(.06,.8,.06,0xffffff,x,.06,z)));gl(2.3,.05,1.6,0x1c3f8f,0,.88,0);[-.5,.5].forEach((z,i)=>{bx(1.3,.34,.4,0x2fb34a,0,.08,z);bx(1.2,.1,.42,0xcfeee0,0,.25,z)})},
+rain(){[-.6,.6].forEach(x=>cy(.4,.4,1.1,0xb8c4cc,x,0,.45,24,{metalness:.7,roughness:.3}));bx(2,.08,1.3,0xe6e9ec,0,1.15,.2);gl(1.8,.04,1.1,0x1c3f8f,0,1.23,.2);bx(.5,.1,.5,0x4f9bd4,0,0,-.6)},
+park(){cy(1.1,1.1,.08,0x69b25a,0,0,0,32);const r=new THREE.Mesh(new THREE.RingGeometry(.55,.7,32),new THREE.MeshStandardMaterial({color:0xf0ece2,roughness:.9}));r.rotation.x=-Math.PI/2;r.position.y=.09;G.add(r);cy(.4,.4,.1,0x5aa9d6,.4,0,.35,24);bx(.5,.05,.3,0x9a7b5c,.4,.08,.75);[[-.7,-.5],[.7,-.55],[-.75,.4],[.05,-.85]].forEach(([x,z])=>{cy(.03,.04,.5,0x5a4a3c,x,0,z,8);mk(new THREE.SphereGeometry(.3,12,10),0x2f8f4a,x,.65,z)});bx(.7,.06,.5,0x9a7b5c,-.35,.45,.3);[-.62,-.08].forEach(x=>bx(.04,.45,.04,0xffffff,x,0,.3))},
+market(){[-.7,.7].forEach(x=>[-.4,.4].forEach(z=>bx(.05,.8,.05,0xffffff,x,0,z)));bx(1.7,.05,1.1,0x9a7b5c,0,.8,0);for(let i=0;i<6;i++)bx(.03,.06,1.1,0xe9d8b8,-.7+i*.28,.85,0);[0,1,2].forEach(i=>{const x=-.55+i*.55;bx(.4,.28,.4,0x8d6e63,x,0,0);cy(.09,.09,.06,[0xe67e22,0xc0392b,0x27ae60][i],x,.28,.05,10)})}
+});
+Object.assign(MD,{
+reef(){cy(1.15,1.2,.1,0x7fd6d6,0,0,0,32,{transparent:true,opacity:.8});[[0,0,0xff6b81],[.5,.35,0xffa502],[-.5,.3,0xa55eea],[.2,-.5,0xff7f50],[-.4,-.4,0x1dd1a1]].forEach(([x,z,c],i)=>{cy(.05,.12,.5+(i%3)*.15,c,x,.05,z,8);for(let k=0;k<3;k++){const a=k*2.1+i;mk(new THREE.SphereGeometry(.12,8,6),c,x+Math.cos(a)*.18,.45+(i%3)*.15,z+Math.sin(a)*.18)}});[[.7,-.1],[-.7,-.1]].forEach(([x,z])=>mk(new THREE.DodecahedronGeometry(.2),0x8d8f91,x,.15,z))},
+tidal(){bx(1.8,.14,.8,0x8a949a,0,.5,0);[-.6,.6].forEach(x=>{const h=new THREE.Group();h.position.set(x,.4,.1);G.add(h);for(let i=0;i<3;i++){const pv=new THREE.Group();pv.rotation.x=i*2.094;const b=new THREE.Mesh(new THREE.BoxGeometry(.04,.4,.1),L(0xf1c40f));b.position.y=.2;pv.add(b);h.add(pv)}spin.push(h);cy(.18,.18,.25,0xff7a2f,x,.64,0,16)});bx(.5,.3,.4,0xe6e9ec,0,.64,0)},
+carbon(){[-.7,0,.7].forEach(z=>{bx(.7,1.5,.6,0xdfe6ea,0,0,z);bx(.72,.1,.62,0x5d6b73,0,1.5,z);const h=new THREE.Group();h.position.set(.36,.75,z);G.add(h);const r=new THREE.Mesh(new THREE.TorusGeometry(.3,.025,6,20),L(0x5d6b73));r.rotation.y=Math.PI/2;h.add(r);for(let k=0;k<4;k++){const pv=new THREE.Group();pv.rotation.x=k*Math.PI/4;const b=new THREE.Mesh(new THREE.BoxGeometry(.02,.58,.05),L(0x3498db));pv.add(b);h.add(pv)}spin.push(h)});cy(.12,.12,1.9,0x95a5a6,-.5,0,0,16);bx(1,.05,.1,0x95a5a6,-.5,1.6,0)},
+airmon(){[-.55,0,.55].forEach((x,i)=>{cy(.03,.04,1.1,0x8a8f94,x,0,0,8);bx(.28,.22,.22,0xf4f6f7,x,1.1,0);cy(.1,.1,.02,0xcfd8dc,x,1.35,0,16);const l=mk(new THREE.SphereGeometry(.04,8,6),0xffffff,x+.15,1.2,.12);l.material=new THREE.MeshBasicMaterial({color:[0x2ecc71,0xf1c40f,0x2ecc71][i]})});bx(1.8,.04,.6,0xd8d2c6,0,0,0)},
+hospital(){wb(1.6,1.1,.9,0xf6f8f9,0,0,-.2,5,4,"#7fb3d5");wb(.8,.5,.8,0xeaeef0,-.3,1.1,-.2,3,2,"#7fb3d5");bx(.3,.3,.03,0xffffff,.45,.3,.27);bx(.26,.08,.04,0xd63031,.45,.41,.28);bx(.08,.26,.04,0xd63031,.45,.32,.28);cy(.3,.3,.03,0x3d84c6,.35,1.6,-.2,24);bx(.2,.01,.05,0xffffff,.35,1.64,-.2);bx(.05,.01,.22,0xffffff,.27,1.64,-.2);bx(.05,.01,.22,0xffffff,.43,1.64,-.2);bx(.5,.22,.25,0xffffff,-.4,0,.75);bx(.5,.05,.26,0xd63031,-.4,.1,.75)}
+});
+Object.assign(MD,{
+cable(){
+  wb(.9,.7,.8,0xf3f5f6,0,0,-.9,3,3,"#4a7ea8");bx(1,.08,.9,0x2fb34a,0,.7,-.9);
+  bx(.8,.03,.6,0x1d3a5a,0,.78,-.9);
+  const h=new THREE.Group();h.position.set(0,1.0,-.9);G.add(h);const t=new THREE.Mesh(new THREE.TorusGeometry(.2,.03,6,20),L(0x555a5f));t.rotation.y=Math.PI/2;h.add(t);spin.push(h);
+  cy(.05,.1,1.7,0x9aa3a8,0,0,1.3,8);bx(.5,.06,.2,0x666b70,0,1.7,1.3);bx(.06,.06,.5,0x666b70,0,1.7,1.3);
+  bx(.025,.025,2.2,0x2b2b2b,0,1.5,.2);bx(.025,.025,2.2,0x2b2b2b,.12,1.45,.2);
+  [[.2,0xe74c3c],[.75,0x2fb34a]].forEach(([z,c])=>{bx(.025,.32,.025,0x2b2b2b,0,1.2,z);bx(.32,.3,.3,c,0,.92,z);bx(.34,.07,.32,0xf4f4f4,0,1.22,z);bx(.34,.12,.3,0x7fc4e6,0,1.0,z)});
+  bx(.3,.05,.3,0x6b6f73,0,0,1.3);
+},
+metro(){
+  bx(2.4,.12,1,0xcfd2d4,0,0,0);bx(2.4,.03,.12,0x555a5f,0,.12,.3);bx(2.4,.03,.12,0x555a5f,0,.12,.45);
+  [-1,1].forEach(x=>[-.4,.4].forEach(z=>cy(.04,.04,.9,0x6b7378,x*.95,.12,z*.9,8)));
+  bx(2.5,.07,1,0x1f8a6a,0,1.02,0);bx(1.5,.03,.7,0x1d3a5a,0,1.1,0);
+  wb(1.7,.3,.34,0xeceff1,0,.16,.38,5,1,"#2d5f8a");bx(1.72,.06,.36,0x1f8a6a,0,.16,.38);
+  cy(.025,.025,.8,0x6b7378,1.05,.12,-.35,6);bx(.3,.22,.04,0x1c64c9,1.05,.85,-.35);bx(.12,.12,.045,0xffffff,1.05,.9,-.35);
+  bx(.5,.28,.25,0x7fa8c4,-.8,.12,-.3,{transparent:true,opacity:.7});
+},
+bikehub(){
+  bx(1.5,.05,.9,0xcfd8dc,0,0,0);[-.65,.65].forEach(x=>[-.35,.35].forEach(z=>cy(.025,.025,.7,0x6b7378,x,.05,z,6)));
+  bx(1.6,.05,1,0x2fb34a,0,.75,0);bx(1.2,.03,.7,0x1d3a5a,0,.8,0);
+  [-.5,-.25,0,.25,.5].forEach((x,i)=>{[-.14,.14].forEach(z=>{const w=mk(new THREE.TorusGeometry(.12,.02,6,14),0x222222,x,.17,z);w.rotation.y=Math.PI/2});bx(.02,.02,.3,i%2?0x1c64c9:0xe74c3c,x,.2,0)});
+  bx(.3,.18,.04,0xffffff,0.7,.0,.45);
+}
+});
+Object.assign(MD,{
+police(){wb(1.5,.8,.9,0xe8edf2,0,0,0,4,2,"#4a7ea8");bx(1.52,.1,.92,0x1c64c9,0,.5,0);bx(1.6,.06,1,0x33404a,0,.8,0);bx(.25,.1,.2,0x1c64c9,-.3,.86,0);bx(.25,.1,.2,0xe74c3c,.3,.86,0);cy(.02,.02,1.1,0x888888,.8,0,.4,6);bx(.3,.18,.02,0x1c64c9,.95,.9,.4);
+  bx(.55,.14,.26,0xf4f4f4,-.3,.04,.68);bx(.3,.1,.24,0x1c64c9,-.3,.18,.68);[-.5,-.1].forEach(x=>cy(.06,.06,.28,0x222222,x,.02,.8,8).rotation.x=Math.PI/2)},
+fire(){wb(1.6,.8,1,0xd2402d,0,0,-.1,4,2,"#f4d58a");[-.5,0,.5].forEach(x=>bx(.4,.5,.03,0xf4f4f4,x,0,.41));bx(1.7,.06,1.1,0x6b2a22,0,.8,-.1);bx(.34,1.4,.34,0xc0392b,.65,0,-.4);bx(.4,.08,.4,0x6b2a22,.65,1.4,-.4);bx(.14,.14,.02,0xffffff,.65,1.1,-.22);
+  bx(.65,.2,.28,0xe74c3c,-.3,.05,.75);bx(.2,.15,.26,0xf4f4f4,-.05,.2,.75);bx(.4,.03,.04,0xcfd2d4,-.3,.3,.75);[-.5,-.1].forEach(x=>cy(.06,.06,.3,0x222222,x,.02,.88,8).rotation.x=Math.PI/2)},
+library(){wb(1.5,.7,.9,0xf3ead7,0,.08,0,5,2,"#6fa8d6");bx(1.7,.08,1.1,0xd9cdb0,0,0,0);bx(1.6,.1,1,0xe8dcc0,0,.78,0);cy(.0,.62,.3,0xe8dcc0,0,.88,.1,4).rotation.y=Math.PI/4;[-.55,-.2,.2,.55].forEach(x=>cy(.05,.05,.7,0xfff8e8,x,.08,.5,10));bx(.6,.06,.2,0xcfc4a8,0,0,.7)},
+mosque(){bx(1.3,.6,1.2,0xf4efe2,0,0,0);bx(1.35,.06,1.25,0xd9cdb0,0,.6,0);const d=mk(new THREE.SphereGeometry(.52,20,14),0x2fa38a,0,.62,0);d.scale.y=.9;cy(.02,.02,.3,0xd4af37,0,1.1,0,6);
+  [[.8,.65],[-.8,.65]].forEach(([x,z])=>{cy(.08,.1,1.5,0xf4efe2,x,0,z,12);cy(.13,.13,.06,0xd4af37,x,1.2,z,12);cy(0,.1,.3,0x2fa38a,x,1.5,z,12)});bx(.4,.32,.03,0x7fb8a8,0,0,.62)},
+townhall(){wb(1.9,.9,1,0xf0e6d2,0,0,0,6,3,"#6fa8d6");bx(2,.07,1.1,0xd9cdb0,0,.9,0);bx(.55,1.3,.55,0xe8dcc0,0,.9,0);bx(.26,.26,.02,0xffffff,0,1.55,.29);cy(0,.4,.5,0x9c4a3a,0,2.2,0,4).rotation.y=Math.PI/4;cy(.015,.015,.45,0x888888,0,2.65,0,6);bx(.22,.14,.02,0x2fb34a,.12,2.9,0);[-.6,-.3,.3,.6].forEach(x=>cy(.05,.05,.8,0xfff8e8,x,0,.55,10))}
+});
+Object.assign(MD,{
+farm(){bx(1.7,.06,1.2,0xcfc8b8,0,0,0);const gl={transparent:true,opacity:.42};bx(1.55,.42,1.0,0xbfe3ee,0,.06,0,gl);
+  [-1,1].forEach(k=>{const r=bx(1.58,.03,.62,0xd8f0f6,0,.6,k*.24,{transparent:true,opacity:.5});r.rotation.x=k*.5});bx(1.58,.04,.05,0x9aa3a8,0,.72,0);
+  [-.32,0,.32].forEach(z=>bx(1.3,.14,.12,0x3fae4d,0,.12,z));cy(.025,.025,.3,0x2b6cb0,.8,.06,.35,6)},
+drip(){bx(1.7,.05,1.3,0x7a5a3a,0,0,0);[-.42,-.15,.12,.39].forEach(z=>bx(1.45,.12,.13,0x4fb85a,0,.05,z));bx(1.55,.03,.03,0x2b6cb0,0,.18,-.58);[-.6,-.3,0,.3,.6].forEach(x=>cy(.012,.012,.12,0x2b6cb0,x,.06,-.5,5));cy(.2,.2,.4,0x3b82c4,.85,.05,-.55,12);bx(.05,.5,.05,0x6b7378,-.85,.05,-.55)},
+saltcrop(){bx(1.7,.05,1.3,0xd9c9a3,0,0,0);bx(.5,.02,.4,0xf5f1e6,.5,.05,.3);bx(.4,.02,.3,0xf5f1e6,-.5,.05,-.35);
+  for(let i=0;i<5;i++)for(let j=0;j<3;j++)cy(0,.12,.32,(i+j)%2?0x8bbf4a:0x6fae4a,-.65+i*.33,.05,-.4+j*.38,5)},
+orchard(){bx(1.7,.05,1.3,0x9a7b52,0,0,0);[[-.55,-.3],[0,-.35],[.55,-.28],[-.3,.3],[.3,.32]].forEach(([x,z],i)=>{cy(.04,.06,.85,0x8d6e63,x,.05,z,6);const f=mk(new THREE.SphereGeometry(.3,9,6),0x3f9b4a,x,.95,z);f.scale.y=.4;mk(new THREE.SphereGeometry(.06,6,5),0xd98a2b,x+.08,.88,z+.05);mk(new THREE.SphereGeometry(.06,6,5),0xd98a2b,x-.07,.86,z-.05)})},
+silo(){bx(1.7,.05,1.2,0xcfc8b8,0,0,0);cy(.38,.38,1.2,0xd8dde1,-.4,.05,-.1,18);cy(0,.38,.25,0x8f989d,-.4,1.25,-.1,18);cy(.34,.34,1.0,0xe3e6e8,.4,.05,-.1,18);cy(0,.34,.22,0x8f989d,.4,1.05,-.1,18);
+  bx(.85,.06,.1,0x777c80,0,.95,-.1);wb(.7,.4,.5,0xe9dcc0,0,.05,.55,2,1,"#6fa8d6");bx(.76,.05,.56,0x8a4a3a,0,.45,.55)},
+agrilab(){wb(1.4,.6,.9,0xf3f5f6,-.15,.05,0,4,2,"#4a7ea8");bx(1.3,.03,.7,0x1d3a5a,-.15,.7,0);bx(.45,.3,.4,0xbfe3ee,.95,.05,.1,{transparent:true,opacity:.5});bx(.35,.1,.3,0x3fae4d,.95,.1,.1);
+  bx(.22,.22,.03,0x2fb34a,-.15,.4,.47);cy(.02,.02,.5,0x6b7378,-.7,.7,-.3,6);bx(.2,.03,.03,0x6b7378,-.7,1.15,-.3)}
+});
+Object.assign(MD,{
+homegarden(){bx(1.8,.05,1.4,0x9a8f6a,0,0,0);house(-.45,-.25,.55,2);[-.35,0,.35].forEach((z,i)=>{bx(.7,.1,.28,0x7a5a3a,.5,.05,z);bx(.64,.05,.24,[0x6bd36b,0x5aa84a,0x8fcf6a][i],.5,.15,z)});
+  [[.3,.3],[.5,.3],[.7,.3]].forEach(([x,z])=>mk(new THREE.SphereGeometry(.06,6,5),0xd9534f,x,.28,-.35+(z>.3?0:0)));bx(1.7,.14,.03,0xb08a5a,0,.05,.68);bx(.04,.2,.03,0xb08a5a,-.8,.05,.68)},
+commgarden(){bx(1.8,.05,1.4,0xb8ad8a,0,0,0);[[-.55,-.35],[0,-.35],[.55,-.35],[-.55,.35],[0,.35],[.55,.35]].forEach(([x,z],i)=>{bx(.42,.1,.36,0x7a5a3a,x,.05,z);bx(.37,.05,.31,[0x6bd36b,0xe8944a,0xc94a4a,0xa56bd0,0xe3c55a,0x5aa84a][i],x,.15,z)});
+  [-.12,.12].forEach(x=>[0].forEach(z=>cy(.02,.02,.5,0x8a6a3a,x,.05,z,6)));bx(.4,.03,.3,0x4fb85a,0,.55,0)},
+balcony(){wb(1.0,1.3,.7,0xe9dfc9,0,.05,0,3,4,"#6fa8d6");[.4,.75,1.1].forEach((y,i)=>{bx(.95,.04,.22,0xcfd2d4,0,y,.45);bx(.85,.1,.1,[0x4fb85a,0x6bd36b,0x3f9b4a][i],0,y+.04,.5);bx(.03,.12,.03,0xffffff,-.3,y+.14,.5);bx(.03,.12,.03,0xffffff,.3,y+.14,.5)});bx(1.05,.05,.75,0x8a8f93,0,1.35,0)},
+fruittrees(){bx(1.8,.05,1.4,0xcdbf9a,0,0,0);[[-.5,-.35,0xf39c12],[.5,-.35,0xd9534f],[-.5,.35,0xe6c229],[.5,.35,0xa04aa8]].forEach(([x,z,c])=>{cy(.05,.07,.6,0x8d6e63,x,.05,z,6);const k=mk(new THREE.SphereGeometry(.34,9,7),0x3f9b4a,x,.8,z);k.scale.y=.8;[[.15,.05],[-.12,.1],[.02,-.17]].forEach(([dx,dz])=>mk(new THREE.SphereGeometry(.05,6,5),c,x+dx,.85,z+dz+.18))})},
+farmmarket(){bx(1.9,.05,1.4,0xcfc8b8,0,0,0);[[-.6,0xd9534f],[0,0x2f9bd6],[.6,0x4fb85a]].forEach(([x,c],i)=>{bx(.5,.28,.3,0x9a7a4a,x,.05,.1);bx(.55,.04,.42,c,x,.7,.05);bx(.55,.04,.1,0xffffff,x,.7,.25);cy(.02,.02,.65,0x8a6a3a,x-.24,.05,.25,5);cy(.02,.02,.65,0x8a6a3a,x+.24,.05,.25,5);
+   [0,1,2].forEach(k=>mk(new THREE.SphereGeometry(.08,7,6),[0xe6522c,0xf39c12,0x6bd36b][(i+k)%3],x-.15+k*.15,.4,.12))});bx(.7,.08,.04,0x2f9bd6,0,.35,-.55)},
+foodrecover(){bx(1.8,.05,1.4,0xbfc9b4,0,0,0);[-.55,0,.55].forEach(x=>{bx(.45,.32,.5,0x8a6a3a,x,.05,-.3);bx(.38,.22,.44,0x4a3322,x,.12,-.3)});wb(.8,.45,.5,0xcfe0cf,-.45,.05,.4,3,1,"#8fc7a0");bx(.9,.05,.6,0x2f8a4a,-.45,.5,.4);bx(.5,.18,.26,0xf4f4f4,.55,.05,.45);bx(.2,.14,.24,0x2f8a4a,.82,.05,.45);bx(.2,.2,.03,0x2fb34a,-.45,.55,.72)},
+fruitorch(){bx(1.9,.05,1.5,0xa68b5b,0,0,0);[-.45,.45].forEach((z,r)=>[-.6,0,.6].forEach((x,c)=>{cy(.04,.06,.55,0x8d6e63,x,.05,z,6);const k=mk(new THREE.SphereGeometry(.3,9,7),[0x3f9b4a,0x4a9d52,0x2f8a45][(r+c)%3],x,.75,z);k.scale.y=.8;const fc=[0xd9534f,0xf39c12,0x7a2f8a][(r+c)%3];[[.15,.1],[-.14,.06],[.03,-.16]].forEach(([dx,dz])=>mk(new THREE.SphereGeometry(.05,6,5),fc,x+dx,.78,z+dz))}))},
+veggie(){bx(1.9,.05,1.5,0xa68b5b,0,0,0);[-.5,0,.5].forEach((z,i)=>{bx(1.6,.3,.34,0xdff3f7,0,.05,z,{transparent:true,opacity:.4});[-1,1].forEach(k=>{const r=bx(1.62,.03,.2,0xd8f0f6,0,.42,z+k*.09,{transparent:true,opacity:.5});r.rotation.x=k*.45});
+   [-.55,-.2,.15,.5].forEach((x,j)=>bx(.26,.14,.14,[0xd9534f,0x6bd36b,0xf39c12,0x4fb85a][(i+j)%4],x,.08,z))})},
+fishfarm(){bx(1.9,.05,1.5,0x2f9fcf,0,-.02,0,{transparent:true,opacity:.7});[[-.45,-.1],[.45,-.1]].forEach(([x,z])=>{const t=mk(new THREE.TorusGeometry(.36,.045,6,20),0xf2f2f2,x,.1,z);t.rotation.x=Math.PI/2;cy(.34,.34,.02,0x1f7fb0,x,.0,z,20);[0,1,2,3].forEach(k=>mk(new THREE.SphereGeometry(.05,6,5),0xff8c42,x+Math.cos(k*1.6)*.18,.05,z+Math.sin(k*1.6)*.18).scale.x=1.6)});
+  bx(1.7,.06,.26,0x8a7a5a,0,.1,.6);cy(.14,.14,.4,0xd8dde1,.7,.1,.6,12);bx(.3,.08,.2,0x3b82c4,-.7,.1,.6)},
+dairy(){bx(2,.05,1.6,0x8fb86a,0,0,0);wb(1,.55,.7,0xc0392b,-.4,.05,-.35,3,1,"#f4d58a");bx(1.1,.07,.8,0x6b2a22,-.4,.6,-.35);cy(.18,.18,.8,0xd8dde1,.45,.05,-.45,14);cy(0,.18,.15,0x8f989d,.45,.85,-.45,14);
+  [[-.3,.4],[.15,.5],[.5,.35]].forEach(([x,z],i)=>{bx(.3,.17,.14,0xf4f4f4,x,.1,z);bx(.12,.18,.15,0x222222,x+.05,.1,z);bx(.1,.12,.1,0xf4f4f4,x+.2,.2,z)});[-.8,-.6].forEach(x=>mk(new THREE.SphereGeometry(.05,6,5),0xffffff,x,.08,.55));bx(1.9,.14,.03,0xb08a5a,0,.05,.72)},
+coldchain(){bx(1.9,.05,1.5,0xcfd2d4,0,0,0);wb(1.5,.55,.8,0xdfe7ec,-.1,.05,-.25,5,1,"#9ec9e8");bx(1.52,.1,.82,0x1c64c9,-.1,.35,-.25);bx(.3,.12,.3,0x9aa3a8,-.5,.6,-.25);cy(.12,.12,.05,0x555a5f,.1,.72,-.25,12);bx(.2,.2,.03,0x7fc4e6,-.1,.5,.18);
+  bx(.65,.22,.28,0xf4f4f4,.15,.05,.55);bx(.22,.17,.26,0x1c64c9,.55,.05,.55);[0,.4].forEach(x=>cy(.06,.06,.3,0x222222,x,.02,.7,8).rotation.x=Math.PI/2)},
+seedbank(){bx(1.9,.05,1.5,0x9a9f8f,0,0,0);const d=mk(new THREE.SphereGeometry(.7,18,10),0xcfd2d4,0,.05,0);d.scale.y=.55;const g=mk(new THREE.SphereGeometry(.5,14,8),0x6db35a,0,.2,0);g.scale.y=.45;bx(.45,.42,.25,0x3b4a55,0,.05,.62);bx(.34,.05,.03,0x7fe3a0,0,.5,.76);
+  [[-.7,.4],[.7,.4]].forEach(([x,z])=>{cy(.015,.015,.45,0x8a6a3a,x,.05,z,5);mk(new THREE.SphereGeometry(.06,6,5),0xe3c55a,x,.55,z)})}
+});
+Object.assign(MD,{
+council(){bx(1.8,.05,1.4,0xcfc8b8,0,0,0);wb(1.2,.5,.8,0xf0e6d2,0,.05,-.25,4,1,"#6fa8d6");bx(1.3,.06,.9,0x2f8a6a,0,.55,-.25);cy(.015,.015,.5,0x888888,.6,.55,-.25,6);bx(.2,.12,.02,0x2f9bd6,.7,.9,-.25);
+  cy(.3,.3,.05,0x8a6a3a,0,.05,.5,16);[0,1,2,3,4,5].forEach(k=>cy(.07,.07,.12,[0xd9534f,0x2f9bd6,0xe3c55a][k%3],Math.cos(k*1.05)*.5,.05,.5+Math.sin(k*1.05)*.5,8))},
+volunteers(){bx(1.8,.05,1.4,0xcfd8c8,0,0,0);wb(1,.5,.7,0xe3f0e6,-.35,.05,-.15,3,1,"#8fc7a0");bx(1.1,.06,.8,0x2fb34a,-.35,.55,-.15);bx(.7,.18,.03,0xffffff,-.35,.32,.22);bx(.6,.06,.03,0x2fb34a,-.35,.38,.24);
+  [0x2f9bd6,0x4fb85a,0xe3c55a].forEach((c,k)=>{bx(.2,.28,.2,c,.4+k*.25,.05,.3);bx(.22,.04,.22,0x333333,.4+k*.25,.33,.3)});[0,1].forEach(k=>mk(new THREE.SphereGeometry(.13,8,6),0x3f9b4a,.5+k*.4,.55,-.4).scale.y=.8);cy(.03,.04,.3,0x8d6e63,.5,.05,-.4,5);cy(.03,.04,.3,0x8d6e63,.9,.05,-.4,5)},
+eventspace(){cy(.9,.9,.06,0xe6e1d6,0,0,0,32);bx(1,.15,.4,0x8a6a3a,0,.06,-.5);bx(1.1,.04,.45,0xd9534f,0,.75,-.5);[-.5,.5].forEach(x=>cy(.02,.02,.7,0x6b7378,x,.06,-.7,6));
+  for(let k=0;k<10;k++)mk(new THREE.SphereGeometry(.035,6,5),0xfff2b0,Math.cos(k*.63)*.7,.62,Math.sin(k*.63)*.7+.1);[[.55,.3,0x2f9bd6],[-.55,.3,0x4fb85a]].forEach(([x,z,c])=>{bx(.32,.2,.22,0x9a7a4a,x,.06,z);bx(.38,.04,.28,c,x,.5,z);cy(.015,.015,.4,0x8a6a3a,x-.15,.06,z+.1,5)})}
+});
+Object.assign(MD,{
+fog(){[-.7,.7].forEach(x=>cy(.04,.04,1.8,0x8d8f91,x,0,-.1,6));[0,.55].forEach(z=>bx(1.5,1.2,.03,0xdde6ea,0,.5,z-.1,{transparent:true,opacity:.55}));bx(1.5,.07,.16,0x4f9bd4,0,.42,.1);cy(.3,.3,.55,0x4f9bd4,1.1,0,.6,16);cy(.32,.32,.05,0x2f6f9f,1.1,.55,.6,16)},
+meters(){cy(.12,.14,.9,0x9aa3a8,-.5,0,-.3,10);cy(.38,.38,.4,0x4f9bd4,-.5,.9,-.3,16);[0,.5].forEach((x,i)=>{bx(.34,.34,.16,0x607d8b,x+.1,.1,.4);cy(.1,.1,.02,0xffffff,x+.1,.3,.49,14).rotation.x=Math.PI/2});bx(1.6,.05,.1,0x4f9bd4,.3,.08,.05);bx(.05,.05,.7,0x4f9bd4,-.5,.08,.1)},
+h2(){bx(1.9,.08,1.5,0x9aa3a8,0,0,0);[-.3,.35].forEach(z=>{const t=mk(new THREE.CylinderGeometry(.32,.32,1.5,18),0xe8eef2,0,.45,z);t.rotation.z=Math.PI/2;const r=mk(new THREE.CylinderGeometry(.325,.325,.12,18),0x1fa3b8,0,.45,z);r.rotation.z=Math.PI/2});bx(.45,.8,.35,0x1fa3b8,-.75,.08,.85);cy(.03,.03,.7,0x333333,-.5,.4,.85,6);bx(.75,.04,.5,0x1c3f8f,.55,.55,.85).rotation.x=-.4;cy(.03,.03,.5,0x999999,.55,.05,.85,6)},
+evhub(){bx(1.9,.05,1.3,0xd8dde0,0,0,0);[[-.8,-.5],[.8,-.5],[-.8,.5],[.8,.5]].forEach(([x,z])=>cy(.04,.04,1,0xcfd4d8,x,.05,z,6));bx(1.9,.07,1.3,0x24304a,0,1.05,0);[-.45,.45].forEach(x=>{bx(.16,.5,.1,0x2fb34a,x,.05,.4);bx(.1,.1,.02,0xffffff,x,.35,.46)});bx(.8,.14,.34,0x3498db,-.45,.05,-.15);bx(.4,.12,.3,0x2a7bb5,-.4,.19,-.15);bx(.8,.14,.34,0xecf0f1,.45,.05,-.15);bx(.4,.12,.3,0xb9c3c8,.5,.19,-.15)},
+falaj(){bx(2,.05,1.5,0xe0cfa0,0,0,0);bx(1.9,.04,.16,0x4f9bd4,0,.05,.15);bx(.7,.5,.6,0xe8d3b0,-.55,.05,-.4);bx(.8,.06,.7,0xb9966b,-.55,.55,-.4);bx(.2,.55,.2,0xd8c29a,-.4,.6,-.4);[[.6,.5],[.85,.15],[.55,-.4]].forEach(([x,z])=>{cy(.04,.05,.75,0x8d6e63,x,.05,z,6);const k=mk(new THREE.SphereGeometry(.32,8,6),0x3f9b4a,x,.9,z);k.scale.y=.45})},
+bees(){bx(1.8,.08,1.4,0x6b4a2b,0,0,0);for(let i=0;i<14;i++){const x=-.75+(i%7)*.25,z=-.4+Math.floor(i/7)*.5+(i%3)*.08;cy(.01,.01,.22,0x3f9b4a,x,.08,z,4);mk(new THREE.SphereGeometry(.07,6,5),[0xff6b81,0xf7d046,0xb06bdc,0xffffff][i%4],x,.34,z)}[[-.5,.45],[.2,.45]].forEach(([x,z])=>{bx(.38,.22,.32,0xf2c14e,x,.08,z);bx(.38,.05,.32,0x3a2a1a,x,.18,z);bx(.38,.2,.32,0xf2c14e,x,.23,z);bx(.44,.04,.38,0xffffff,x,.43,z)})},
+mpa(){cy(1.15,1.2,.1,0x7fd6d6,0,0,0,32,{transparent:true,opacity:.8});for(let i=0;i<8;i++){const a=i*.785,x=Math.cos(a)*1.0,z=Math.sin(a)*1.0;mk(new THREE.SphereGeometry(.09,8,6),i%2?0xffffff:0xff6b3d,x,.12,z)}[[0,0,0xff6b81],[.4,.3,0xffa502],[-.45,.2,0xa55eea],[.1,-.45,0x26de81]].forEach(([x,z,c])=>cy(.1,.16,.4,c,x,.05,z,7));bx(.05,.7,.05,0x6b4a2b,.7,0,-.6);bx(.4,.25,.04,0x2fa56b,.7,.5,-.6)},
+innolab(){bx(1.7,.8,1.2,0xe9eef2,0,0,0);bx(1.72,.28,1.22,0x5fa8d3,0,.3,0,{transparent:true,opacity:.7});bx(1.8,.07,1.3,0xb8c4cc,0,.8,0);mk(new THREE.SphereGeometry(.4,14,8,0,6.283,0,1.571),0xcfe9f2,.4,.85,0);bx(.9,.04,.6,0x1c3f8f,-.4,.9,-.1).rotation.x=-.25;cy(.02,.02,.7,0x888888,-.7,.85,.3,6);mk(new THREE.SphereGeometry(.08,8,6),0x2fb34a,-.7,1.6,.3)}
+});
+function houseM(x,z,w,h,d,c,rc,flat){bx(w,h,d,c,x,0,z);if(flat)bx(w+.06,.06,d+.06,rc,x,h,z);else{bx(w*.62,.05,d+.1,rc,x-w*.17,h+w*.16,z).rotation.z=.6;bx(w*.62,.05,d+.1,rc,x+w*.17,h+w*.16,z).rotation.z=-.6}bx(.14,.26,.03,0x6b4a2b,x,0,z+d/2+.01);[-1,1].forEach(q=>bx(.14,.14,.03,0xbfe3f2,x+q*w*.28,h*.5,z+d/2+.01))}
+function fieldM(leaf,fruit,o){o=o||{};bx(1.9,.05,1.6,0x6b4a2b,0,0,0);const sz=o.s||.11;for(let r=0;r<4;r++)for(let c=0;c<5;c++){const x=-.72+c*.36,z=-.57+r*.38;if(o.stake)cy(.008,.008,.5,0x8d6e63,x,.05,z,4);const p=mk(new THREE.SphereGeometry(sz,7,5),leaf,x,.05+sz*(o.flat||o.ground?.5:1),z);p.scale.y=o.flat||o.ground?.45:(o.tall||1);if(fruit!=null){if(o.ground)mk(new THREE.SphereGeometry(o.fs,8,6),Array.isArray(fruit)?fruit[(r+c)%fruit.length]:fruit,x+.08,.05+o.fs,z+.05);else if(!o.flat)[[.07,.04],[-.06,.07],[.02,-.08]].forEach(([dx,dz],i)=>mk(new THREE.SphereGeometry(o.fs||.04,6,5),Array.isArray(fruit)?fruit[i%fruit.length]:fruit,x+dx,.05+sz*(o.fy||.9)+(i%2)*.04,z+dz))}}
+ if(o.tunnel)[-.5,.5].forEach(z=>{bx(1.85,.05,.04,0xdde6ea,0,.5,z);bx(1.85,.5,.02,0xdff3f7,0,.05,z,{transparent:true,opacity:.35})})}
+function groveM(leaf,fruit,sz,tc){bx(1.9,.05,1.6,0x86b865,0,0,0);[[-.55,-.4],[.05,-.45],[.6,-.35],[-.6,.35],[0,.4],[.55,.4]].forEach(([x,z],i)=>{cy(.04,.06,.5*sz,tc||0x8d6e63,x,.05,z,6);const k=mk(new THREE.SphereGeometry(.3*sz,9,7),leaf,x,.05+.55*sz,z);k.scale.y=.85;for(let q=0;q<4;q++){const a=q*1.6+i;mk(new THREE.SphereGeometry(.045,6,5),Array.isArray(fruit)?fruit[q%fruit.length]:fruit,x+Math.cos(a)*.26*sz,.05+.5*sz+Math.sin(q*2+i)*.06,z+Math.sin(a)*.26*sz)}})}
+function nursM(k,c1,c2){bx(1.9,.05,1.6,0xc9b88a,0,0,0);[-.8,.8].forEach(x=>[-.7,.7].forEach(z=>cy(.03,.03,.7,0xe6eef2,x,0,z,5)));bx(1.9,.04,1.6,0xdff3f7,0,.7,0,{transparent:true,opacity:.28});bx(1.9,.7,.03,0xdff3f7,0,0,.8,{transparent:true,opacity:.18});
+ if(k=="mang")bx(1.6,.06,1.2,0x4fc3f7,0,.05,0,{transparent:true,opacity:.75});
+ for(let r=0;r<3;r++)for(let c=0;c<5;c++){const x=-.7+c*.35,z=-.45+r*.45;cy(.07,.05,.1,0xb5532f,x,.08,z,8);
+  if(k=="palm"){cy(.015,.02,.28,0x8d6e63,x,.18,z,5);for(let a=0;a<4;a++){const f=mk(new THREE.SphereGeometry(.07,5,4),c1,x+Math.cos(a*1.57)*.07,.5,z+Math.sin(a*1.57)*.07);f.scale.y=.3}}
+  else if(k=="tree"){cy(.012,.015,.2,0x8d6e63,x,.18,z,5);mk(new THREE.SphereGeometry(.1,7,5),c1,x,.42,z);if(c2)mk(new THREE.SphereGeometry(.03,5,4),c2,x+.07,.42,z+.04)}
+  else if(k=="mang"){cy(.01,.015,.2,0x6b4a2b,x,.18,z,4);mk(new THREE.SphereGeometry(.08,6,5),c1,x,.4,z)}
+  else{mk(new THREE.SphereGeometry(.08,6,5),c1,x,.22,z);if(c2)mk(new THREE.SphereGeometry(.035,5,4),c2,x+.04,.28,z)}}}
+Object.assign(MD,{
+home(){bx(1.8,.04,1.5,0xd8cdb9,0,0,0);houseM(0,0,1,.55,.8,0xf2e8d5,0xb0603d);cy(.03,.04,.4,0x8d6e63,.7,.04,.5,6);mk(new THREE.SphereGeometry(.2,8,6),0x3f9b4a,.7,.5,.5)},
+villa(){bx(1.9,.04,1.6,0xd8cdb9,0,0,0);houseM(-.2,-.1,1.2,.6,.8,0xf6efe0,0xc0603a);bx(.5,.38,.6,0xf6efe0,.65,.04,-.1);bx(.55,.05,.65,0xc0603a,.65,.42,-.1);bx(.7,.03,.4,0x4fc3f7,.4,.04,.6)},
+tower(){bx(1.8,.04,1.5,0xd8cdb9,0,0,0);bx(.95,1.9,.8,0xcfd8de,0,.04,0);for(let i=0;i<6;i++)bx(.97,.09,.82,0x6fa8d6,0,.25+i*.29,0);bx(1,.06,.85,0x90a4ae,0,1.94,0);bx(.25,.3,.05,0x6b4a2b,0,.04,.43)},
+solarhome(){bx(1.8,.04,1.5,0xd8cdb9,0,0,0);houseM(0,0,1.1,.55,.8,0xf2e8d5,0x8d6e63);bx(.42,.03,.7,0x1c3f8f,-.2,.79,0).rotation.z=.6;bx(.42,.03,.7,0x1c3f8f,.2,.79,0).rotation.z=-.6},
+heritagehome(){bx(1.8,.04,1.5,0xe0cfa0,0,0,0);bx(1.5,.5,1.1,0xe0cfa0,0,.04,0);bx(1.55,.05,1.15,0xcdb98a,0,.54,0);bx(.28,.8,.28,0xd8c29a,.4,.54,-.2);bx(.3,.05,.3,0xb9966b,.4,1.34,-.2);bx(.2,.3,.03,0x6b4a2b,-.2,.04,.56);cy(.03,.04,.6,0x8d6e63,-.75,.04,.5,6);mk(new THREE.SphereGeometry(.22,8,6),0x3f9b4a,-.75,.75,.5).scale.y=.5},
+inn(){bx(1.8,.04,1.5,0xd8cdb9,0,0,0);houseM(-.4,0,.9,.55,.7,0xf4e6c8,0xb0603d);houseM(.55,.05,.7,.45,.6,0xf0dcc0,0xb0603d);bx(.3,.15,.03,0x2fa56b,0,.28,.55)},
+lux(){bx(1.9,.04,1.6,0xd8cdb9,0,0,0);bx(1.5,1.2,.9,0xf2ece0,-.1,.04,0);bx(1.54,.06,.94,0xd4af37,-.1,1.24,0);bx(.55,1.8,.55,0xf2ece0,.6,.04,-.1);for(let i=0;i<4;i++)bx(1.52,.07,.92,0x6fa8d6,-.1,.3+i*.28,0);bx(.6,.05,.3,0xd4af37,-.2,.4,.55);cy(.03,.03,.4,0xd4af37,-.45,.04,.62,6);cy(.03,.03,.4,0xd4af37,.05,.04,.62,6);bx(.7,.03,.35,0x4fc3f7,-.6,.04,.72)},
+resort(){bx(1.9,.04,1.6,0xe9d9a8,0,0,0);bx(1.3,.5,.5,0xfaf3e3,-.1,.04,-.45);bx(1.35,.05,.55,0x2fa38a,-.1,.54,-.45);bx(.95,.03,.5,0x4fc3f7,0,.04,.35);[[-.7,.55,0xe74c3c],[.65,.6,0xf1c40f],[.7,.1,0x3498db]].forEach(([x,z,c])=>{cy(.01,.01,.4,0xdddddd,x,.04,z,5);cy(0,.2,.1,c,x,.4,z,8)})},
+ecohotel(){bx(1.8,.04,1.5,0xd8cdb9,0,0,0);bx(1.4,.9,.8,0xe8efdf,0,.04,0);bx(1.5,.1,.9,0x4e8f3a,0,.94,0);bx(.6,.04,.4,0x1c3f8f,.3,1.1,0).rotation.x=-.4;bx(.06,.8,.5,0x3f9b4a,-.73,.1,0);bx(.3,.3,.03,0xbfe3f2,.2,.3,.41);bx(.3,.3,.03,0xbfe3f2,-.3,.3,.41)},
+office(){bx(1.8,.04,1.5,0xd8cdb9,0,0,0);bx(1.2,.9,.9,0xdfe6ea,0,.04,0);bx(1.22,.45,.92,0x6fa8d6,0,.25,0);bx(1.3,.05,1,0x90a4ae,0,.94,0)},
+hq(){bx(1.8,.04,1.5,0xd8cdb9,0,0,0);bx(.8,2.3,.8,0xcfd8de,-.2,.04,0);bx(.6,1.6,.6,0xdfe6ea,.55,.04,.1);for(let i=0;i<8;i++)bx(.82,.06,.82,0x4f86ad,-.2,.25+i*.27,0);for(let i=0;i<5;i++)bx(.62,.06,.62,0x4f86ad,.55,.25+i*.28,.1);cy(.015,.02,.5,0xdddddd,-.2,2.34,0,5)},
+greenco(){bx(1.8,.04,1.5,0xd8cdb9,0,0,0);bx(1.3,.8,.9,0xeef3ea,0,.04,0);bx(1.34,.1,.94,0x4e8f3a,0,.84,0);[[-.4,0],[0,.25],[.35,-.1]].forEach(([x,z])=>mk(new THREE.SphereGeometry(.14,7,5),0x3f9b4a,x,1.05,z));bx(.5,.03,.35,0x1c3f8f,.4,.96,.2).rotation.x=-.3;bx(.9,.25,.03,0xbfe3f2,0,.25,.46)},
+greentech(){bx(1.8,.04,1.5,0xd8cdb9,0,0,0);bx(1.2,.6,.9,0xe9eef2,-.2,.04,0);mk(new THREE.SphereGeometry(.4,14,8,0,6.283,0,1.571),0xcfe9f2,-.2,.64,0);cy(.03,.05,1.2,0xffffff,.7,.04,.2,8);bx(.5,.04,.04,0xf7f7f7,.7,1.3,.2);bx(.04,.5,.04,0xf7f7f7,.7,1.3,.2);bx(.5,.03,.3,0x1c3f8f,.5,.1,-.5)},
+fgar(){bx(1.9,.04,1.5,0xcfc8b8,0,0,0);bx(1.7,.7,1.1,0xb5532f,0,.04,0);[-.55,0,.55].forEach(x=>bx(.5,.28,1.12,0x8d6e63,x,.74,0).rotation.z=.4);cy(.08,.1,1.3,0x8a4b38,.75,.74,-.3,8);puff(.75,2.1,-.3,0);[0xe74c3c,0x3498db,0xf1c40f].forEach((c,i)=>cy(.12,.12,.22,c,-.6+i*.35,.04,.7,10))},
+ffood(){bx(1.9,.04,1.5,0xcfc8b8,0,0,0);bx(1.5,.8,1,0xe9d9b0,-.1,.04,0);bx(1.55,.06,1.05,0xb8924f,-.1,.84,0);cy(.28,.28,1.4,0xcfd5d8,.7,.04,-.35,14);cy(.3,.3,.06,0x9aa3a8,.7,1.44,-.35,14);[0,.3,.6].forEach((z,i)=>cy(.1,.1,.22,i%2?0xd9534f:0x2fa56b,-.5+z,.04,.7,10));bx(1.2,.05,.2,0x777777,-.1,.1,.58)},
+fplast(){bx(1.9,.04,1.5,0xcfc8b8,0,0,0);bx(1.6,.8,1.2,0x4a7fb0,0,.04,0);bx(1.65,.06,1.25,0x2f5d85,0,.84,0);[-.3,.2].forEach(x=>cy(.08,.1,1.2,0x555555,x,.84,-.4,8));puff(-.3,2.1,-.4,0);puff(.2,2.1,-.4,2);[0x3498db,0xf1c40f,0xe74c3c].forEach((c,i)=>cy(.14,.14,.3,c,-.5+i*.4,.04,.75,10))},
+fsteel(){bx(1.9,.04,1.5,0xcfc8b8,0,0,0);bx(1.8,1,1.3,0x5a5f66,0,.04,0);bx(1.85,.07,1.35,0x3a3d42,0,1.04,0);[-.4,.5].forEach(x=>cy(.14,.18,1.9,0x3a3d42,x,1.04,-.35,10));for(let j=0;j<4;j++)puff(j%2?.5:-.4,3.0,-.35,j);bx(.5,.4,.05,0xff7b3a,0,.3,.66,{emissive:0xff5a1a,emissiveIntensity:.8})},
+fgreen(){bx(1.9,.04,1.5,0xcfc8b8,0,0,0);bx(1.7,.8,1.1,0x6d9d7a,0,.04,0);bx(1.8,.1,1.2,0x44804b,0,.84,0);bx(.6,.03,.4,0x1c3f8f,-.3,1.0,0).rotation.x=-.3;[0xe6c34a,0x4a90c8,0x43a05f].forEach((c,i)=>cy(.16,.16,.35,c,-.5+i*.45,.04,.75,10))},
+tomato(){fieldM(0x3f9b4a,0xe0372d,{stake:1,s:.12,tall:1.2,fy:1.1})},
+cucumber(){fieldM(0x2f8a3a,0x7cc35a,{s:.1,tunnel:1,fs:.035})},
+pepper(){fieldM(0x3f9b4a,[0xe0372d,0xf1c40f,0x2fa56b],{s:.1,fs:.04})},
+eggplant(){fieldM(0x4a9a52,0x6a2a7a,{s:.11,fs:.06,fy:.7})},
+leafy(){fieldM(0x7fcf6a,null,{flat:1,s:.15})},
+fig(){groveM(0x4f8f3d,0x6a3a6a,1)},
+pomegranate(){groveM(0x3f9b4a,0xc0392b,1)},
+citrus(){groveM(0x2f7d3f,[0xf39c12,0xf1c40f],1)},
+mango(){groveM(0x2f8a3a,[0xf5a623,0xf1d23c],1.2)},
+melon(){fieldM(0x4f9b4a,[0x2f8f4a,0xe8d96b],{ground:1,s:.13,fs:.11})},
+nurveg(){nursM("sprout",0x6fcf6a,0xe0372d)},
+nurfruit(){nursM("tree",0x3f9b4a,0xf39c12)},
+nurshade(){nursM("palm",0x3f9b4a)},
+nurmang(){nursM("mang",0x2f8a5a)},
+nurherb(){nursM("herb",0x7a5bb8,0xffffff)}
+});
+let sd=7;let tractors=[],trucks=[];const AA=Math.atan2(AZ,AX),PX=AX+Math.cos(AA)*10.5,PZ=AZ+Math.sin(AA)*10.5;const rnd=()=>(sd=(sd*9301+49297)%233280)/233280;
+const P=(a,r)=>[Math.cos(a)*r,Math.sin(a)*r];
+const mix=(a,b,t)=>new THREE.Color(a).lerp(new THREE.Color(b),Math.max(0,Math.min(1,t)));
+function build3d(){
+  winMats.length=0;if(dyn)sc.remove(dyn);dyn=new THREE.Group();sc.add(dyn);puffs=[];buses=[];spin=[];G=dyn;sd=7;
+  const hc=[0xf2e8d5,0xe8d3b0,0xd3dfe6];
+  for(let i=0;i<12;i++){const[x,z]=P(i*2.4,.6+(i*.43)%2.1),h=.45+(i%4)*.18;house(x,z,h,i)}wb(.55,2.2,.55,0xcfd8de,0,TOP,0,3,12,"#4f86ad");bx(.4,.4,.4,0xeceff1,0,TOP+2.2,0);cy(.012,.02,.6,0xdddddd,0,TOP+2.6,0,6);
+  for(let i=0;i<(LOW?5:15);i++){const a=i*.42+.1,x=Math.cos(a)*(MR-.2),z=Math.sin(a)*(MR-.2);cy(.07,.1,1.3,0x8d6e63,x,TOP,z,6);mk(new THREE.SphereGeometry(.6,8,6),0x3f9b4a,x,TOP+1.4,z).scale.y=.35}
+  for(let i=0;i<9;i++){const[x,z]=P(rnd()*6.28,3.3+rnd()*.5);cy(.05,.05,.3,0x5a3d2b,x,TOP,z,5);cy(0,.32,.8,0x2f7d3f,x,TOP+.3,z,7)}
+  for(let i=0;i<(LOW?18:55);i++){const a=rnd()*6.28,rr=7+rnd()*(MR-8),x=Math.cos(a)*rr,z=Math.sin(a)*rr;if(rr>16.1&&rr<18.1)continue;if(S.pl.some(b=>Math.hypot(b.x-x,b.z-z)<2))continue;cy(.05,.05,.3,0x5a3d2b,x,TOP,z,5);cy(0,.32,.8,0x2f7d3f,x,TOP+.3,z,7)}
+  for(let i=0;i<18;i++){const[x,z]=P(rnd()*6.28,rnd()*(IR-1));cy(.05,.05,.3,0x5a3d2b,IX+x,TOP,IZ+z,5);cy(0,.32,.8,0x3a8a4a,IX+x,TOP+.3,IZ+z,7)}
+  for(let i=0;i<(LOW?4:14);i++){const a=rnd()*6.28,rr=8+rnd()*(MR-12),x=Math.cos(a)*rr,z=Math.sin(a)*rr;if(rr>16.1&&rr<18.1||S.pl.some(b=>Math.hypot(b.x-x,b.z-z)<2.6))continue;house(x,z,.4+rnd()*.35,i+3)}
+  S.pl.forEach((b,pi)=>{const g=new THREE.Group();g.userData.pi=pi;g.position.set(b.x,TOP,b.z);g.rotation.y=-b.a;G=g;cy(1.35,1.45,.05,0xcfc8b8,0,0,0,32);MD[b.id]();dyn.add(g)});
+  G=dyn;
+  fish=[];cars=[];
+  S.pl.forEach(b=>{if(b.id!=="reef")return;const d=Math.hypot(b.x,b.z)||1,ax=b.x/d*(MR+6),az=b.z/d*(MR+6);for(let k=0;k<7;k++){const f=fishMesh();f.userData={cx:ax,cz:az,r:1.2+(k%3)*.5,sp:(k%2?1:-1)*(.012+(k%3)*.004),a:k*.9,y:-.55-(k%3)*.08,ph:k};dyn.add(f);fish.push(f)}const dl=dolphinMesh();dl.userData={cx:ax,cz:az,r:2.6,sp:.012,a:0,y:-.9,ph:0,jump:1};dyn.add(dl);fish.push(dl)});
+  const nc=Math.min(14,Math.round(S.pop/110));for(let i=0;i<nc;i++){const c=carMesh([0xe74c3c,0x3498db,0xecf0f1,0x2c3e50,0xf1c40f][i%5]);c.userData={r:i%2?5.6:6.05,sp:(i%2?-1:1)*(.006+(i%3)*.001),a:i*.9};dyn.add(c);cars.push(c)}
+  walkers=[];const np=Math.min(LOW?12:46,Math.round(S.pop/55));for(let i=0;i<np;i++)person(0,0,1.1+(i*.37)%2.2,(i%2?1:-1)*(.006+(i%5)*.002),i);
+  const VIS={shops:4,souq:5,mall:6,fun:7,school:4,hotel:3,market:4,park:3,falaj:4,evhub:2,home:2,villa:2,tower:4,inn:2,lux:3,resort:4,ecohotel:3,office:3};S.pl.forEach(b=>{for(let k=0;k<(VIS[b.id]||0);k++)person(b.x,b.z,1.5+(k%3)*.35,(k%2?1:-1)*(.01+(k%4)*.003),k+3)});
+  tractors=[];trucks=[];
+  {const nF=S.pl.filter(b=>{const q=zoneAt(b.x,b.z);return q&&q.zone==="f"}).length;
+   for(let i=0;i<(LOW?3:Math.min(12,4+nF));i++){farmer(AX,AZ,2.2+(i%4)*1.05,(i%2?1:-1)*(.007+(i%3)*.002),i)}
+   [3,-9,9].slice(0,LOW?1:3).forEach((dz,i)=>{const w=2*Math.sqrt(IR*IR-dz*dz)*.9,g=tractorMesh(i%2==1);g.scale.setScalar(1.5);dyn.add(g);tractors.push({g,z:AZ+dz,x0:AX-1,x1:AX+w/2-.5,ph:i*2.1,sp:.45+i*.08})});
+   animalPen();
+   const hb=S.pl.filter(b=>HV[b.id]);
+   hb.slice(0,LOW?5:14).forEach((b,i)=>{const hv=HV[b.id];for(let q=0;q<2;q++)if(!LOW||q==0)farmer(b.x,b.z,1.45+q*.35,(q?1:-1)*(.009+(i%3)*.002),i+q);
+    for(let k=0;k<Math.min(3,hv[1]);k++){const cx=b.x+1.5+(k%2)*.26,cz=b.z+1.0,cyb=TOP+Math.floor(k/2)*.12;bx(.22,.12,.17,0x9c7f55,cx,cyb,cz);mk(new THREE.SphereGeometry(.075,6,5),hv[2],cx,cyb+.13,cz).scale.y=.7}});
+   if(hb.length)for(let k=0;k<(hb.length>=8?2:1);k++){const g=truckMesh(HV[hb[k%hb.length].id][2]);g.scale.setScalar(1.4);dyn.add(g);trucks.push({g,ph:k*3.1,sp:.3+k*.07})}}
+  if(S.n.bus){mk(new THREE.RingGeometry(5.7,5.95,72),0x555a5f,0,TOP+.03,0).rotation.x=-Math.PI/2;for(let i=0;i<S.n.bus*2;i++){const b=bx(.55,.28,.28,0x2fb34a,0,TOP,0);b.userData={a:i*3.1};buses.push(b)}}
+  env();
+}
+let skyC=new THREE.Color(0x9fd3f0),seaC=new THREE.Color(0x2aa0c4),cyc=true,lastNf=-1;
+const NS=new THREE.Color(0x0a1330),NSEA=new THREE.Color(0x06223a);
+function env(){const sm=(100-S.m.a)/100,ht=(temp()-1)/1.2;let c=mix(0x9fd3f0,0x8a8070,sm*.9);c=c.lerp(new THREE.Color(0xe9a070),Math.min(1,ht)*.5);skyC=c;seaC=mix(0x2aa0c4,0x5d6b3a,(100-S.m.s)/100*.9);sea.position.y=-.35+Math.min(1.6,(temp()-1)*.6);applySky(Math.max(0,lastNf))}
+function applySky(nf){const c=skyC.clone().lerp(NS,nf*.9);sc.background=c;if(sc.fog)sc.fog.color.copy(c);else sc.fog=new THREE.Fog(c,230,620);$("wrap").style.background="#"+c.getHexString();sea.material.color.copy(seaC.clone().lerp(NSEA,nf*.75));winMats.forEach(m=>m.emissiveIntensity=nf*1.3)}
+const eqPen=k=>{const z=zoneAt(k.x,k.z);return z.ring==3?0:z.ring==2?-.7:z.ring==1?-1.3:-2.4};
+function updatePadsOld(){
+  const a=A.find(x=>x.id==sel);
+  pads.children.forEach(p=>{const k=p.userData.k,s=SL[k];p.visible=!!a&&!S.pl[k]&&a.z.includes(s.zone);if(p.visible){p.material.color.set(a.pol?(s.ring==3?0x4cff9a:s.ring==0?0xff5a3c:s.ring==1?0xffb43c:0xd6ff4c):0x4cff9a)}});
+  $("cap").textContent=a?"Tap a glowing plot to build: "+a.n+" ("+[...a.z].map(z=>ZN[z]).join(" / ")+")"+(a.pol?". Red and orange plots are near homes and hurt Equity.":""):"Drag to rotate, pinch to zoom, use the arrows or two fingers to move. Choose a building card below to start. The islet on the right is industry; the islet on the left is the food security farm.";
+}
+/* scenery */
+const shal=(x,z,rd)=>{const m=new THREE.Mesh(new THREE.CylinderGeometry(rd,rd,.05,48),new THREE.MeshBasicMaterial({color:0x8fe0e8,transparent:true,opacity:.35,depthWrite:false}));m.position.set(x,-.3,z);sc.add(m)};
+shal(0,0,MR+5.3);shal(IX,IZ,IR+7.6);shal(AX,AZ,IR+7.6);
+const clouds=new THREE.Group();sc.add(clouds);
+for(let i=0;i<8;i++){const c=new THREE.Group();for(let j=0;j<4;j++){const s=new THREE.Mesh(new THREE.SphereGeometry(1.4+Math.random()*.9,10,8),new THREE.MeshLambertMaterial({color:0xffffff,transparent:true,opacity:.85}));s.position.set(j*1.5,Math.random()*.5,Math.random());s.scale.y=.6;c.add(s)}c.position.set(-130+i*34,22+(i%3)*4,-90+(i*47%180));clouds.add(c)}
+const boats=[];for(let i=0;i<3;i++){const b=new THREE.Group();b.add(new THREE.Mesh(new THREE.BoxGeometry(1.6,.35,.6),L(0xf2f2f2)));const s=new THREE.Mesh(new THREE.ConeGeometry(.5,1.4,3),L(0xe74c3c));s.position.y=.9;b.add(s);b.userData={a:i*2.1,r:66+i*5};sc.add(b);boats.push(b)}
+for(let i=0;i<28;i++){const a=i*.225+.2,rr=MR+1.7+Math.random()*.6,m=new THREE.Mesh(new THREE.DodecahedronGeometry(.4+Math.random()*.4),L(0x8d8f91));m.position.set(Math.cos(a)*rr,-.1,Math.sin(a)*rr);m.castShadow=true;sc.add(m)}
+const RD=new THREE.MeshStandardMaterial({color:0x3b4148,roughness:.9}),PROM=new THREE.MeshStandardMaterial({color:0xe6e1d6,roughness:.9}),LAMPM=new THREE.MeshBasicMaterial({color:0xfff2b0});
+{const flat=(g,m,y)=>{const o=new THREE.Mesh(g,m);o.rotation.x=-Math.PI/2;o.position.y=y;o.receiveShadow=true;sc.add(o);return o};
+flat(new THREE.RingGeometry(5.4,6.3,96),RD,.952);flat(new THREE.RingGeometry(5.82,5.86,96),new THREE.MeshBasicMaterial({color:0xf2f2f2}),.954);flat(new THREE.RingGeometry(MR-1.1,MR-.4,160),PROM,.951);flat(new THREE.RingGeometry(16.6,17.4,128),RD,.952);flat(new THREE.RingGeometry(16.98,17.02,128),new THREE.MeshBasicMaterial({color:0xf2f2f2}),.954);
+for(let k=0;k<6;k++){const a=ang+k*Math.PI/3,m=new THREE.Mesh(new THREE.BoxGeometry(MR-3.4,.02,.9),RD);m.position.set(Math.cos(a)*(3.1+(MR-3.4)/2),.95,Math.sin(a)*(3.1+(MR-3.4)/2));m.rotation.y=-a;m.receiveShadow=true;sc.add(m)}
+for(let i=0;i<22;i++){const a=i*2*Math.PI/22+.07,x=Math.cos(a)*6.7,z=Math.sin(a)*6.7,po=new THREE.Mesh(new THREE.CylinderGeometry(.02,.025,.6,6),L(0x6b7178));po.position.set(x,1.24,z);sc.add(po);const bu=new THREE.Mesh(new THREE.SphereGeometry(.06,8,6),LAMPM);bu.position.set(x,1.56,z);sc.add(bu)}
+for(let i=0;i<44;i++){const a=i*2*Math.PI/44+.07,x=Math.cos(a)*17.9,z=Math.sin(a)*17.9,po=new THREE.Mesh(new THREE.CylinderGeometry(.02,.025,.6,6),L(0x6b7178));po.position.set(x,1.24,z);sc.add(po);const bu=new THREE.Mesh(new THREE.SphereGeometry(.06,8,6),LAMPM);bu.position.set(x,1.56,z);sc.add(bu)}}
+let walkers=[],flt="All",fish=[],cars=[],dif="normal",YRS=20,LOW=false;
+
+const CROPS={none:{n:"No crop focus (mixed)",d:"Farms grow a general mix. No bonus, no extra water use.",f:0,w:0},
+wheat:{n:"Wheat, rice and grains",d:"The staple calories. Big food gain but very thirsty.",f:4,w:-3,c:"#e3c55a",c2:"#d4b146"},
+dates:{n:"Dates and palm fruit",d:"Low water, shade and carbon storage. Steady, sweet and local.",f:2.5,w:0,a:.6,co2:-.5,c:"#4f8f3d",c2:"#3f7a30"},
+veg:{n:"Vegetables: tomato, cucumber, lettuce, pepper",d:"Fresh vegetables for health and nutrition. Needs cover, water and energy.",f:3.5,w:-1.5,e:-1,c:"#79d35e",c2:"#5fbd4a"},
+fruit:{n:"Fruit: fig, pomegranate, citrus, melon",d:"Vitamins and variety. Medium water, cooler air under the trees.",f:3,w:-1,a:.3,c:"#e8944a",c2:"#d97d33"},
+salt:{n:"Salt-tolerant barley and quinoa",d:"Survives salty soil on very little water. Protects land long-term.",f:2.5,w:-.4,s:.2,c:"#bccb8a",c2:"#a9bb73"},
+fodder:{n:"Fodder: alfalfa and clover",d:"Feeds dairy, poultry and fish. Helps protein, less for people directly.",f:1.2,w:-1,c:"#6fb55a",c2:"#5b9d49"}};
+const FARMK=["farm","drip","saltcrop","orchard","fruitorch","veggie","silo"];
+function curCrop(){const e=$("crop");return e&&CROPS[e.value]?e.value:"none"}
+function farmFactor(){const n=S.n;return Math.min(1,(n.farm+n.drip+n.saltcrop+n.orchard+n.fruitorch+n.veggie+(n.homegarden+n.commgarden+n.balcony)*.4)/4)}
+function selfSuff(){const c=CROPS[curCrop()],P=Math.max(0,S.r.f+(c.f||0)*farmFactor()*2),need=40*(S.pop/2000)*(1+.02*(S.y-1));return Math.round(100*P/(P+need))}
+function importBill(ss){return Math.round((100-ss)*.1*(S.pop/2000))}
+function diversity(){const n=S.n,u=new Set((S.crops||[]).slice(-4).filter(x=>x!="none")).size,bd=["farm","veggie","fruitorch","orchard","saltcrop","drip"].filter(k=>n[k]>0).length;return Math.min(1,(u+bd)/6)}
+function paintFields(){const c=CROPS[curCrop()],a=c.c||"#8fcf6a",b=c.c2||"#d6c46e";farmStripes.forEach((m,i)=>m.material.color.set(i%2?b:a))}
+function cropInfo(){const c=CROPS[curCrop()],e=$("crinfo");if(e){e.textContent=c.d+(c.f?" Food +"+c.f+(c.w?", Water "+c.w:"")+(c.e?", Energy "+c.e:"")+(c.a?", Air +"+c.a:"")+(c.s?", Waste +"+c.s:"")+" (scaled by how many farms you have).":"")}paintFields();draw()}
+
+function faces(v){const lv=v<35?0:v<60?1:2,C=["#e5484d","#e0b43a","#2fa56b"],M=["M6 14 Q9 10.5 12 14","M6 13 L12 13","M6 11.5 Q9 15 12 11.5"];
+ return [0,1,2].map(i=>`<svg width="20" height="20" viewBox="0 0 18 18" style="opacity:${i==lv?1:.22};transform:scale(${i==lv?1.12:.9});vertical-align:middle"><circle cx="9" cy="9" r="8" fill="${C[i]}"/><circle cx="6.3" cy="7" r="1.1" fill="#fff"/><circle cx="11.7" cy="7" r="1.1" fill="#fff"/><path d="${M[i]}" stroke="#fff" stroke-width="1.5" fill="none" stroke-linecap="round"/></svg>`).join("")}
+function happiness(){const m=S.m,n=S.n,base=(m.w*.18+m.f*.22+m.a*.15+m.q*.17+m.s*.1)/.82;
+ const svc=Math.min(30,n.school*4+n.edu*3+n.hospital*8+n.library*4+n.mosque*4+n.police*4+n.fire*3+n.park*3+n.fun*3+n.market*2+n.souq*2+n.shops*2+n.farmmarket*3+n.commgarden*3+n.metro*5+n.tram*3+n.bus*2+n.cable*2+n.bikehub*2+n.council*3+n.volunteers*3+n.eventspace*3);
+ const pen=(n.fact+n.gas)*2+Math.min(10,importBill(selfSuff())*.5);
+ return Math.round(Math.max(0,Math.min(100,base*.7+svc-pen)))}
+function voices(bill){const n=S.n,m=S.m,tr=n.metro+n.tram+n.bus+n.cable+n.bikehub;
+ const neg=[[m.w<35,"Tap water is running short. We need more supply."],[m.f<35,"Food is getting scarce and expensive."],[m.a<40,"The air feels heavy and children are coughing."],[m.s<35,"Rubbish is piling up in the streets."],[m.q<40,"Some neighbourhoods get all the burdens and none of the benefits."],[!n.hospital,"We need a hospital closer to home."],[!n.school&&!n.edu,"Our children need a school."],[tr==0,"Getting around without a car is hard."],[n.fact>0&&m.a<60,"The smoke and smell from the factory are unbearable."],[(bill||0)>12,"Imported food is draining the budget."]].filter(x=>x[0]).map(x=>x[1]);
+ const pos=[[n.metro,"The new metro saves me an hour a day."],[n.park,"The park is where my family spends weekends."],[n.commgarden,"Our community garden brought the neighbours together."],[n.farmmarket,"I buy fresh local fruit every Friday."],[m.w>80,"Clean, reliable water at home. We feel secure."],[n.solar>=2,"Our bills are lower thanks to solar power."],[n.library,"The library is full of students."],[n.mosque,"The mosque brings the community together."],[n.hospital,"A hospital nearby gives us peace of mind."],[n.council,"At last, someone listens to our neighbourhood."]].filter(x=>x[0]).map(x=>x[1]);
+ const out=[];if(neg[0])out.push(neg[0]);for(const p of pos){if(out.length>=2)break;out.push(p)}if(!out.length)out.push("Life is quiet and steady.");return out.map(t=>"“"+t+"”").join("  ")}
+const DIF={easy:{g:1.15,d:.85},normal:{g:1,d:1},hard:{g:.8,d:1.25}};function setDif(v){dif=v;init()}function setYrs(v){YRS=+v;init()}
+function perf(){LOW=!LOW;R.shadowMap.enabled=!LOW;sun.castShadow=!LOW;sc.traverse(o=>{if(o.material)mats(o).forEach(m=>m.needsUpdate=true)});build3d();size();const b=$('prb');b.textContent=LOW?'Lite':'Full';b.style.background=LOW?'#0e9f78':''}
+const CATS={All:null,Water:["rain","desal","wtp","grey","flood","mang","fog","meters"],Ocean:["reef","tidal","mang","flood","desal","mpa"],Energy:["solar","wind","gas","grid","badgir","wtx","tidal","h2"],Food:["homegarden","commgarden","balcony","fruittrees","farmmarket","foodrecover","fruitorch","veggie","fishfarm","dairy","coldchain","seedbank","farm","drip","saltcrop","orchard","silo","agrilab","vf","roof","comp","market","hydro","aqua","reef","bees","fog"],"My Farm":["tomato","cucumber","pepper","eggplant","leafy","fig","pomegranate","citrus","mango","melon","nurveg","nurfruit","nurshade","nurmang","nurherb","farm","drip","saltcrop","orchard","fruitorch","veggie","silo","agrilab","dairy","seedbank","coldchain","fishfarm"],Housing:["home","villa","tower","solarhome","heritagehome","green"],Business:["inn","lux","resort","ecohotel","hotel","shops","souq","mall","office","hq","greenco","greentech","eco"],City:["school","shops","souq","mall","fun","hotel","green","park","edu","fair","bus","tram","cable","metro","bikehub","police","fire","library","mosque","townhall","council","volunteers","eventspace","hospital","airmon","evhub","falaj","innolab"],Industry:["fact","fgar","ffood","fplast","fsteel","fgreen","eco","recy","wtx","carbon"]};
+const PGB=new THREE.CylinderGeometry(.06,.07,.26,6),PGH=new THREE.SphereGeometry(.07,6,5),PCOL=[0xe74c3c,0x3498db,0xf1c40f,0x2ecc71,0x9b59b6,0xecf0f1,0xe67e22].map(c=>L(c)),SK=[0xf1c27d,0xc68642,0x8d5524,0xe0ac69].map(c=>L(c));
+function fishMesh(){const g=new THREE.Group(),b=new THREE.Mesh(new THREE.SphereGeometry(.12,8,6),L(0xff8c42)),t=new THREE.Mesh(new THREE.ConeGeometry(.07,.14,4),L(0xff8c42));b.scale.set(1.7,.7,.7);t.rotation.z=Math.PI/2;t.position.x=-.2;g.add(b);g.add(t);return g}
+function dolphinMesh(){const g=new THREE.Group(),b=new THREE.Mesh(new THREE.SphereGeometry(.2,10,8),L(0x7f9db5)),f=new THREE.Mesh(new THREE.ConeGeometry(.07,.2,4),L(0x6b8aa3));b.scale.set(2.6,.8,.8);f.position.set(0,.2,0);g.add(b);g.add(f);return g}
+function carMesh(c){const g=new THREE.Group(),b=new THREE.Mesh(new THREE.BoxGeometry(.34,.09,.17),L(c)),t=new THREE.Mesh(new THREE.BoxGeometry(.17,.08,.15),L(0xdfe8ee));b.position.y=.07;t.position.set(-.02,.14,0);g.add(b);g.add(t);return g}
+function farmer(cx,cz,r,sp,i){person(cx,cz,r,sp,i%2?3:6);const g=walkers[walkers.length-1],hm=L(0xe3c26b);const br=new THREE.Mesh(new THREE.CylinderGeometry(.13,.13,.012,10),hm),cn=new THREE.Mesh(new THREE.CylinderGeometry(.05,.07,.05,8),hm);br.position.y=.41;cn.position.y=.44;g.add(br);g.add(cn)}
+function tractorMesh(trailer){const g=new THREE.Group(),a=(geo,c,x,y,z,rx)=>{const m=new THREE.Mesh(geo,L(c));m.position.set(x,y,z);if(rx)m.rotation.x=rx;m.castShadow=true;g.add(m);return m};
+ a(new THREE.BoxGeometry(.34,.12,.2),0x2e8b3d,0,.2,0);a(new THREE.BoxGeometry(.18,.1,.17),0x1f6b2b,.2,.17,0);a(new THREE.BoxGeometry(.14,.14,.18),0xcfe8f0,-.08,.32,0);a(new THREE.BoxGeometry(.17,.02,.2),0x2e8b3d,-.08,.4,0);
+ [-.12,.12].forEach(z=>{a(new THREE.CylinderGeometry(.14,.14,.07,12),0x222222,-.12,.14,z,Math.PI/2);a(new THREE.CylinderGeometry(.08,.08,.06,10),0x222222,.2,.08,z*.85,Math.PI/2)});
+ a(new THREE.CylinderGeometry(.015,.015,.14,6),0x444444,.24,.3,.05);
+ if(trailer){a(new THREE.BoxGeometry(.32,.07,.2),0x8d6e4b,-.44,.17,0);a(new THREE.BoxGeometry(.3,.05,.02),0xa98a5f,-.44,.23,.09);a(new THREE.BoxGeometry(.3,.05,.02),0xa98a5f,-.44,.23,-.09);[-.1,.1].forEach(z=>a(new THREE.CylinderGeometry(.07,.07,.04,10),0x222222,-.44,.07,z,Math.PI/2));for(let k=0;k<3;k++)a(new THREE.CylinderGeometry(.05,.05,.12,8),0xe3c26b,-.5+k*.07,.26,0,Math.PI/2)}
+ return g}
+function animalMesh(t){const g=new THREE.Group(),a=(geo,c,x,y,z,rx)=>{const m=new THREE.Mesh(geo,L(c));m.position.set(x,y,z);if(rx)m.rotation.x=rx;m.castShadow=true;g.add(m);return m},B=(w,h,d)=>new THREE.BoxGeometry(w,h,d),C=(r,h)=>new THREE.CylinderGeometry(r,r,h,6);
+ if(t==="cow"){a(B(.17,.17,.34),0xf4f4f0,0,.22,0);a(B(.175,.1,.1),0x2a2a2a,0,.25,.06);a(B(.175,.08,.08),0x2a2a2a,0,.2,-.1);a(B(.1,.1,.12),0xf4f4f0,0,.27,.23);a(B(.08,.05,.04),0xe8a0a0,0,.25,.3);[[-.06,.12],[.06,.12],[-.06,-.12],[.06,-.12]].forEach(([x,z])=>a(C(.02,.14),0xeeeeee,x,.07,z))}
+ else if(t==="sheep"){const b=a(new THREE.SphereGeometry(.13,8,6),0xf4f1ea,0,.2,0);b.scale.set(.9,.8,1.3);a(new THREE.SphereGeometry(.05,6,5),0x3a3a3a,0,.24,.17);[[-.04,.06],[.04,.06],[-.04,-.06],[.04,-.06]].forEach(([x,z])=>a(C(.012,.1),0x3a3a3a,x,.05,z))}
+ else if(t==="goat"){a(B(.11,.11,.26),0xb08a5b,0,.2,0);a(B(.07,.08,.08),0xc8a273,0,.27,.16);a(new THREE.ConeGeometry(.012,.06,5),0x444444,-.02,.34,.15);a(new THREE.ConeGeometry(.012,.06,5),0x444444,.02,.34,.15);[[-.04,.09],[.04,.09],[-.04,-.09],[.04,-.09]].forEach(([x,z])=>a(C(.012,.12),0x8a6a40,x,.06,z))}
+ else{a(B(.16,.18,.4),0xc9a46a,0,.38,0);a(new THREE.SphereGeometry(.09,8,6),0xb8935a,0,.53,-.04);a(B(.06,.3,.06),0xc9a46a,0,.52,.22,-.35);a(B(.08,.07,.14),0xd2ae74,0,.67,.3);[[-.05,.14],[.05,.14],[-.05,-.14],[.05,-.14]].forEach(([x,z])=>a(C(.022,.29),0xb8935a,x,.145,z))}
+ return g}
+function animalPen(){const cs=Math.cos(AA),sn=Math.sin(AA),W=(lx,lz)=>[PX+lx*cs-lz*sn,PZ+lx*sn+lz*cs],pg=new THREE.Group();pg.position.set(PX,TOP,PZ);pg.rotation.y=-AA;dyn.add(pg);
+ const a=(geo,c,x,y,z,rz,ry)=>{const m=new THREE.Mesh(geo,L(c));m.position.set(x,y,z);if(rz)m.rotation.z=rz;if(ry)m.rotation.y=ry;m.castShadow=m.receiveShadow=true;pg.add(m);return m},B=(w,h,d)=>new THREE.BoxGeometry(w,h,d);
+ a(B(9.4,.03,7.4),0x9c7f55,0,.015,0);a(B(7.2,.032,5.6),0x7fb35a,-.9,.02,0);
+ [[0,-3.6,9.4,.06],[0,3.6,9.4,.06]].forEach(([x,z,w])=>{a(B(w,.05,.05),0xf2ece0,x,.14,z);a(B(w,.05,.05),0xf2ece0,x,.26,z)});[[-4.6,0],[4.6,0]].forEach(([x,z])=>{a(B(.05,.05,7.3),0xf2ece0,x,.14,z);a(B(.05,.05,7.3),0xf2ece0,x,.26,z)});
+ for(let k=0;k<=15;k++){const x=-4.6+k*9.2/15;[-3.6,3.6].forEach(z=>a(B(.07,.34,.07),0xe9e0cc,x,.17,z))}for(let k=1;k<12;k++){const z=-3.6+k*7.2/12;[-4.6,4.6].forEach(x=>a(B(.07,.34,.07),0xe9e0cc,x,.17,z))}
+ a(B(2.3,1.2,3.1),0xb5372e,3.2,.6,0);a(B(1.5,.07,3.3),0x7a2620,3.2+.55,1.45,0,-.5);a(B(1.5,.07,3.3),0x7a2620,3.2-.55,1.45,0,.5);a(B(.7,.8,.05),0xf2e4c8,2.04,.4,0);
+ const si=new THREE.Mesh(new THREE.CylinderGeometry(.4,.4,2.2,12),L(0xcfd5d8));si.position.set(3.2,1.1,2.5);si.castShadow=true;pg.add(si);const sc2=new THREE.Mesh(new THREE.SphereGeometry(.4,10,6,0,6.283,0,1.571),L(0x9aa3a8));sc2.position.set(3.2,2.2,2.5);pg.add(sc2);
+ [[1.6,-2.8],[2.2,-2.8],[1.9,-2.8,1]].forEach(([x,z,u])=>{const h=new THREE.Mesh(new THREE.CylinderGeometry(.22,.22,.42,10),L(0xe3c26b));h.rotation.x=Math.PI/2;h.position.set(x,u?.55:.22,z);h.castShadow=true;pg.add(h)});
+ a(B(1.2,.18,.35),0x6b7178,-3.2,.1,-3);a(B(1.1,.06,.28),0x4f9bd4,-3.2,.2,-3);
+ const sp=[["cow",-2.8,-1.4],["cow",-.6,1.6],["cow",.4,-1.8],["sheep",-3,1.8],["sheep",-1.8,-.2],["sheep",-1.2,2.4],["goat",.9,.5],["goat",-3.4,.2],["camel",1.1,2.2],["camel",-2,-2.4]].slice(0,LOW?4:10);
+ sp.forEach(([t,lx,lz],i)=>{const m=animalMesh(t),[wx,wz]=W(lx,lz);m.userData={cx:wx,cz:wz,r:.35+(i%3)*.12,sp:(i%2?1:-1)*(.004+(i%4)*.0012),a:i*1.9,ph:i*.8};dyn.add(m);walkers.push(m)})}
+function person(cx,cz,r,sp,i){const g=new THREE.Group(),b=new THREE.Mesh(PGB,PCOL[i%7]),h=new THREE.Mesh(PGH,SK[i%4]);b.position.y=.13;h.position.y=.33;g.add(b);g.add(h);g.userData={cx,cz,r,sp,a:i*1.7,ph:i};dyn.add(g);walkers.push(g)}
+let selB=-1;
+const selRing=new THREE.Mesh(new THREE.RingGeometry(1.5,1.7,40),new THREE.MeshBasicMaterial({color:0xff4d4d,side:THREE.DoubleSide,transparent:true,opacity:.9,depthWrite:false}));selRing.rotation.x=-Math.PI/2;selRing.visible=false;sc.add(selRing);
+function updateSel(){const p=$("rmb");if(selB<0||!S.pl[selB]){selB=-1;p.style.display="none";selRing.visible=false;return}const b=S.pl[selB],x=A.find(a=>a.id==b.id);p.style.display="block";$("rmi").innerHTML="<b>"+x.n+"</b><br><span class=\"hint\">"+Object.entries(x.r).map(([k,v])=>LAB[k]+" "+(v>0?"+":"")+v).join(", ")+" · refund $"+Math.floor(x.cost*.5)+"M (50%)</span>";selRing.visible=true;selRing.position.set(b.x,.97,b.z)}
+function pickB(e){if(S.over||sel)return;const r=cv.getBoundingClientRect(),rc=new THREE.Raycaster();rc.setFromCamera(new THREE.Vector2((e.clientX-r.left)/r.width*2-1,-(e.clientY-r.top)/r.height*2+1),cam);const h=rc.intersectObjects(dyn.children,true);for(const it of h){let o=it.object;while(o&&o.userData.pi===undefined)o=o.parent;if(o&&o.userData.pi!==undefined){selB=o.userData.pi;updateSel();return}}const o=rc.ray.origin,d=rc.ray.direction,t=(TOP-o.y)/d.y;selB=-1;if(t>0){const gx=o.x+d.x*t,gz=o.z+d.z*t;let bd=1.4;S.pl.forEach((b,i)=>{const dd=Math.hypot(b.x-gx,b.z-gz);if(dd<bd){bd=dd;selB=i}})}updateSel()}
+function removeB(){if(selB<0||S.over)return;const b=S.pl[selB],x=A.find(a=>a.id==b.id),rr=b.r||x.r;S.pl.splice(selB,1);S.n[b.id]--;for(const q in rr){S.r[q]-=rr[q];if(M[q])S.m[q]=Math.min(100,Math.max(0,S.m[q]-rr[q]*1.5))}const rf=Math.floor(x.cost*.5);S.cash+=rf;selB=-1;build3d();updatePads();updateSel();draw();$("log").insertAdjacentHTML("beforeend","<p class=\"hint\">Removed "+x.n+". Refund $"+rf+"M.</p>")}
+function askRestart(){$("ov").innerHTML='<div class="ovl"><div class="box" style="max-width:380px"><h2 style="margin:0 0 6px">Restart the game?</h2><p style="margin:0">Your island, budget and progress will be reset to year 1.</p><div style="display:flex;gap:8px;margin-top:14px"><button class="btn" style="flex:1" onclick="document.getElementById(\'ov\').innerHTML=\'\'">Cancel</button><button class="btn" style="flex:1;background:var(--ac);color:#fff;border-color:var(--ac);font-weight:700" onclick="document.getElementById(\'ov\').innerHTML=\'\';init()">Restart</button></div></div></div>'}
+/* free placement with live preview */
+let ghost=null;const gp={x:0,z:0,base:0,off:0};
+function zoneAt(x,z){const d=Math.hypot(x,z),di=Math.hypot(x-IX,z-IZ);if(di<=IZR)return{zone:"d",ring:3};if(Math.hypot(x-AX,z-AZ)<=IZR)return{zone:"f",ring:4};if(d<3.4||d>MR-.5||(d>4.85&&d<6.85)||(d>16.1&&d<18.1))return null;if(d>MR-2.9)return{zone:"c",ring:2};return{zone:"i",ring:d<=7?0:d<=15?1:2}}
+function okAt(){const z=zoneAt(gp.x,gp.z),a=A.find(x=>x.id==sel);if(!z||!a||!a.z.includes(z.zone))return null;if(S.pl.some(b=>Math.hypot(b.x-gp.x,b.z-gp.z)<2.2))return null;if(z.zone==='f'&&Math.hypot(gp.x-PX,gp.z-PZ)<6.6)return null;return z}
+function setGhost(x,z){gp.x=x;gp.z=z;const di=Math.hypot(x-IX,z-IZ);gp.base=di<=IR+1?Math.atan2(z-IZ,x-IX):Math.hypot(x-AX,z-AZ)<=IR+1?Math.atan2(z-AZ,x-AX):Math.atan2(z,x);updateGhost()}
+function updateGhost(){if(!ghost)return;if(!ghost.userData.p){ghost.position.set(gp.x,TOP,gp.z);ghost.userData.p=1}ghost.rotation.y=-(gp.base+gp.off);const z=okAt(),a=A.find(x=>x.id==sel);ghost.traverse(o=>{if(o.isMesh)mats(o).forEach(m=>{if(m.emissive){m.emissiveMap=null;m.emissiveIntensity=.45;m.emissive.set(z?0x0a8a4a:0xc0392b);m.needsUpdate=true}})});let msg;if(z)msg="Valid location: "+ZN[z.zone]+(a.pol?". Equity effect: "+eqPen({x:gp.x,z:gp.z}).toFixed(1)+" per year":"");else{const zz=zoneAt(gp.x,gp.z);msg=!zz?"Outside buildable land, or too close to the town":!a.z.includes(zz.zone)?a.n+" cannot go in the "+ZN[zz.zone].toLowerCase()+" zone. Allowed: "+[...a.z].map(q=>ZN[q]).join(", "):"Too close to another building"}$("cinfo").textContent=msg;$("cinfo").style.color=z?"var(--ok)":"var(--bad)";$("okb").disabled=!z}
+function findSpot(){const a=A.find(x=>x.id==sel),c=[];const T=[];for(let t=0;t<6.28;t+=.3)T.push(t);
+ if(a.z.includes("i"))[8,11,14,19,22,25].forEach(r=>T.forEach(t=>c.push([Math.cos(t)*r,Math.sin(t)*r])));
+ if(a.z.includes("c"))T.forEach(t=>c.push([Math.cos(t)*(MR-1.6),Math.sin(t)*(MR-1.6)]));
+ if(a.z.includes("d"))[0,5,9,13].forEach(r=>T.forEach(t=>c.push([IX+Math.cos(t)*r,IZ+Math.sin(t)*r])));
+ if(a.z.includes("f"))[0,5,9,13].forEach(r=>T.forEach(t=>c.push([AX+Math.cos(t)*r,AZ+Math.sin(t)*r])));
+ for(const[p,q]of c){gp.x=p;gp.z=q;if(okAt())return setGhost(p,q)}setGhost(c[0][0],c[0][1])}
+function updatePads(){const a=A.find(x=>x.id==sel);if(ghost){sc.remove(ghost);ghost=null}$("ctl").style.display=a?"block":"none";cv.style.touchAction=a?"none":"pan-y";
+ if(a){if(a.z==="f"){pxT=AX*.85;pzT=AZ*.85;zmT=1.3}else if(a.z==="d"){pxT=IX*.85;pzT=IZ*.85;zmT=1.3}else if(Math.hypot(pxT,pzT)>35){pxT=0;pzT=0;zmT=Math.max(zmT,2)}ghost=new THREE.Group();const sp=puffs,ss=spin;puffs=[];spin=[];G=ghost;MD[a.id]();puffs=sp;spin=ss;ghost.traverse(o=>{if(o.isMesh){o.material=Array.isArray(o.material)?o.material.map(m=>m.clone()):o.material.clone();mats(o).forEach(m=>{m.transparent=true;m.opacity=Math.min(.75,m.opacity)});o.castShadow=false}});sc.add(ghost);gp.off=0;findSpot();$("cap").textContent="Drag your finger on the island to move the building. It snaps automatically to the nearest valid spot. Then confirm."}
+ else $("cap").textContent="Drag to rotate, pinch to zoom, use the arrows or two fingers to move. Choose a building card below to start. The islet on the right is industry; the islet on the left is the food security farm."}
+function snapNearest(){const x0=gp.x,z0=gp.z;for(let r=.4;r<=7;r+=.4)for(let k=0;k<20;k++){const a=k*Math.PI/10;gp.x=x0+Math.cos(a)*r;gp.z=z0+Math.sin(a)*r;if(okAt())return setGhost(gp.x,gp.z)}gp.x=x0;gp.z=z0;setGhost(x0,z0)}
+function tapGround(e){const r=cv.getBoundingClientRect(),rc=new THREE.Raycaster();rc.setFromCamera(new THREE.Vector2((e.clientX-r.left)/r.width*2-1,-(e.clientY-r.top)/r.height*2+1),cam);const o=rc.ray.origin,d=rc.ray.direction;if(Math.abs(d.y)<1e-4)return;const t=(TOP-o.y)/d.y;if(t<=0)return;setGhost(o.x+d.x*t,o.z+d.z*t);if(!okAt())snapNearest()}
+function nudge(f,r){const s=.45,fx=-Math.sin(th),fz=-Math.cos(th),rx=Math.cos(th),rz=-Math.sin(th);setGhost(gp.x+(fx*f+rx*r)*s,gp.z+(fz*f+rz*r)*s)}
+function rotGhost(){gp.off+=Math.PI/4;updateGhost()}
+function confirmPlace(){if(!sel||!okAt())return;build(sel,{x:gp.x,z:gp.z,a:gp.base+gp.off})}
+function size(){const w=$("wrap").clientWidth,h=Math.round(Math.min(540,w*.85));R.setPixelRatio(Math.min(window.devicePixelRatio||1,LOW?1:2));R.setSize(w,h,false);cv.style.height=h+"px";cam.aspect=w/h;cam.updateProjectionMatrix()}
+addEventListener("resize",size);
+let zm=2.2,zmT=2.2,pv=1,pvT=1,vth=0,ly=0,moving=0,px=0,pz=0,pxT=0,pzT=0,panMode=0,mid=null;
+function pan(dx,dy){const k=.1*zm,c=Math.cos(th),n=Math.sin(th);/* right=(c,-n) forward=(-n,-c) */pxT+=-c*dx*k+(-n)*dy*k;pzT+=n*dx*k+(-c)*dy*k;const ox=pxT,oz=pzT,d=Math.hypot(ox,oz),m=95;if(d>m){pxT=ox/d*m;pzT=oz/d*m}}const ptrs=new Map();let pd=0;
+function zoom(f){zmT=Math.max(.3,Math.min(3.4,zmT*f))}
+cv.addEventListener("wheel",e=>{e.preventDefault();zoom(Math.exp(Math.max(-60,Math.min(60,e.deltaY))*.0016))},{passive:false});
+cv.addEventListener("pointerdown",e=>{cv.setPointerCapture(e.pointerId);ptrs.set(e.pointerId,[e.clientX,e.clientY]);if(ptrs.size==2){const[a,b]=[...ptrs.values()];pd=Math.hypot(a[0]-b[0],a[1]-b[1]);mid=[(a[0]+b[0])/2,(a[1]+b[1])/2];moving=0;drag=0;return}sx=e.clientX;sy=e.clientY;if(sel){moving=1;tapGround(e);return}drag=(panMode||e.shiftKey||e.button==2)?2:1;lx=e.clientX;ly=e.clientY;vth=0;cv.oncontextmenu=ev=>ev.preventDefault()});
+cv.addEventListener("pointermove",e=>{if(ptrs.has(e.pointerId))ptrs.set(e.pointerId,[e.clientX,e.clientY]);if(ptrs.size==2){const[a,b]=[...ptrs.values()],d=Math.hypot(a[0]-b[0],a[1]-b[1]);if(pd>0&&d>0)zoom(pd/d);pd=d;const m2=[(a[0]+b[0])/2,(a[1]+b[1])/2];if(mid)pan(m2[0]-mid[0],m2[1]-mid[1]);mid=m2;return}if(moving){tapGround(e);return}if(drag==2){pan(e.clientX-lx,e.clientY-ly);lx=e.clientX;ly=e.clientY;return}if(drag){const dx=e.clientX-lx,dy=e.clientY-ly;th-=dx*.008;vth=vth*.6-dx*.008*.4;pvT=Math.max(.55,Math.min(1.5,pvT+dy*.004));lx=e.clientX;ly=e.clientY}});
+const endPtr=e=>{const tap=e.type=="pointerup"&&ptrs.size===1&&!sel&&!moving&&Math.abs(e.clientX-sx)<8&&Math.abs(e.clientY-sy)<8;ptrs.delete(e.pointerId);if(tap)pickB(e);if(ptrs.size<2){pd=0;mid=null}if(moving&&sel&&!okAt())snapNearest();moving=0;drag=0};
+cv.addEventListener("pointercancel",endPtr);cv.addEventListener("pointerup",endPtr);
+
+(()=>{let iv=0;const V={u:[0,7],d:[0,-7],l:[7,0],r:[-7,0]};
+const stop=()=>{clearInterval(iv);iv=0};
+document.querySelectorAll("#dpad button").forEach(b=>{const d=b.dataset.d;
+ b.addEventListener("pointerdown",e=>{e.preventDefault();e.stopPropagation();stop();if(d=="c"){pxT=0;pzT=0;return}const v=V[d];pan(v[0],v[1]);iv=setInterval(()=>pan(v[0],v[1]),16)});
+ ["pointerup","pointerleave","pointercancel"].forEach(ev=>b.addEventListener(ev,stop))});
+let lt=0;cv.addEventListener("pointerup",e=>{if(sel||moving)return;const n=Date.now();if(n-lt<300&&Math.abs(e.clientX-sx)<10&&Math.abs(e.clientY-sy)<10){zmT=zmT>1.4?.8:2.2;lt=0}else lt=n});
+})();
+const pos=seaG.attributes.position;
+function loop(t){
+  t*=.001;requestAnimationFrame(loop);if(!S)return;
+  const amp=.1+(fx&&t-fx<4?.45:0);
+  for(let i=0;i<pos.count;i++)pos.setY(i,Math.sin(pos.getX(i)*.4+t*1.2)*amp+Math.cos(pos.getZ(i)*.35+t*1.5)*amp);
+  pos.needsUpdate=true;
+  puffs.forEach(p=>{const k=(t*.4+p.userData.ph)%1,u=p.userData;p.position.set(u.x+k*.8,u.y0+k*2.2,u.z);p.scale.setScalar(.5+k);p.material.opacity=.6*(1-k)});
+  spin.forEach(h=>h.rotation.x+=.045);
+  clouds.children.forEach(c=>{c.position.x+=.012;if(c.position.x>140)c.position.x=-140});walkers.forEach(w=>{const u=w.userData;u.a+=u.sp;w.position.set(u.cx+Math.cos(u.a)*u.r,TOP+Math.abs(Math.sin(t*9+u.ph))*.03,u.cz+Math.sin(u.a)*u.r);w.rotation.y=-u.a-(u.sp>0?0:Math.PI)});
+  fish.forEach(f=>{const u=f.userData;u.a+=u.sp;f.position.set(u.cx+Math.cos(u.a)*u.r,u.jump?-.95+Math.abs(Math.sin(t*1.3+u.ph))*1.25:u.y+Math.sin(t*2+u.ph)*.06,u.cz+Math.sin(u.a)*u.r);f.rotation.y=-(u.a+Math.PI/2)+(u.sp>0?0:Math.PI)});
+  tractors.forEach(o=>{const v=Math.sin(t*o.sp+o.ph);o.g.position.set(o.x0+(o.x1-o.x0)*(.5+.5*v),TOP+.02,o.z);o.g.rotation.y=Math.cos(t*o.sp+o.ph)>0?0:Math.PI});
+  trucks.forEach(o=>{const r0=MR+1.2,r1=Math.hypot(AX,AZ)-IR-.3,v=.5+.5*Math.sin(t*o.sp+o.ph),r=r0+(r1-r0)*v;o.g.position.set(Math.cos(AA)*r,.97,Math.sin(AA)*r);o.g.rotation.y=-AA+(Math.cos(t*o.sp+o.ph)>0?0:Math.PI)});
+  cars.forEach(c=>{const u=c.userData;u.a+=u.sp;c.position.set(Math.cos(u.a)*u.r,.96,Math.sin(u.a)*u.r);c.rotation.y=-(u.a+Math.PI/2)+(u.sp>0?0:Math.PI)});
+  {const ph=cyc?t/420*6.2832+.9:1.57,s1=Math.sin(ph),nf=cyc?Math.max(0,Math.min(1,.2-s1*1.1)):0;sun.position.set(Math.cos(ph)*30,Math.max(5,s1*34+6),14);sun.intensity=.12+.9*Math.max(0,Math.min(1,s1*1.4+.2));hemi.intensity=.2+.5*(1-nf);fill.intensity=.12+.25*(1-nf);if(Math.abs(nf-lastNf)>.008){lastNf=nf;applySky(nf)}}boats.forEach(b=>{const u=b.userData;u.a+=.004;b.position.set(Math.cos(u.a)*u.r,-.2+Math.sin(t*2+u.a)*.05,Math.sin(u.a)*u.r);b.rotation.y=-u.a});
+  buses.forEach(b=>{b.userData.a+=.012;const[x,z]=P(b.userData.a,5.83);b.position.set(x,TOP+.14,z);b.rotation.y=-b.userData.a});
+  pads.children.forEach(p=>{if(p.visible)p.material.opacity=.35+.2*Math.sin(t*4)});
+  if(ghost){const u=ghost.position;u.x+=(gp.x-u.x)*.3;u.z+=(gp.z-u.z)*.3;u.y=TOP+.1+Math.sin(t*5)*.06}
+  if(!drag){th+=vth;vth*=.94;if(!sel&&Math.abs(vth)<.0008)th+=.0004}zm+=(zmT-zm)*.14;px+=(pxT-px)*.16;pz+=(pzT-pz)*.16;pv+=(pvT-pv)*.14;
+  cam.position.set(px+Math.sin(th)*52*zm,30*zm*pv,pz+Math.cos(th)*52*zm);cam.lookAt(px,0,pz);R.render(sc,cam);
+}
+function thumbs(R,cv){R=R||window.R0;cv=cv||R.domElement;
+  const s2=new THREE.Scene();s2.background=new THREE.Color(0xe3f0f7);s2.add(new THREE.HemisphereLight(0xffffff,0x9ab59a,.9));
+  const d=new THREE.DirectionalLight(0xffffff,1);d.position.set(5,9,6);s2.add(d);const f2=new THREE.DirectionalLight(0xcfe3ff,.35);f2.position.set(-5,4,-4);s2.add(f2);
+  const c2=new THREE.PerspectiveCamera(32,1.5,.1,80);
+  const base=new THREE.Mesh(new THREE.CylinderGeometry(1,1.06,.3,48),L(0x6db35a));base.position.y=-.15;s2.add(base);
+  R.setPixelRatio(1);R.setSize(600,400,false);
+  A.forEach(a=>{try{const g=new THREE.Group();s2.add(g);puffs=[];spin=[];G=g;MD[a.id]();puffs.forEach(p=>p.position.set(p.userData.x+p.userData.ph*.6,p.userData.y0+p.userData.ph*1.8,p.userData.z));
+    const bb=new THREE.Box3().setFromObject(g),c=bb.getCenter(new THREE.Vector3()),sz=bb.getSize(new THREE.Vector3()),r=Math.max(sz.x,sz.y*1.3,sz.z,1.6),k=Math.max(1.8,r*.95);
+    base.scale.set(k,1,k);base.position.x=c.x;base.position.z=c.z;
+    c2.position.set(c.x+r*1.05,c.y+r*.85,c.z+r*1.25);c2.lookAt(c.x,c.y,c.z);
+    R.render(s2,c2);const t2=document.createElement("canvas");t2.width=600;t2.height=400;const x2=t2.getContext("2d");let done=false;try{const gl2=R.getContext(),buf=new Uint8Array(600*400*4);gl2.readPixels(0,0,600,400,gl2.RGBA,gl2.UNSIGNED_BYTE,buf);const im=x2.createImageData(600,400);for(let y=0;y<400;y++)im.data.set(buf.subarray((399-y)*2400,(400-y)*2400),y*2400);x2.putImageData(im,0,0);done=true}catch(e){}if(!done)x2.drawImage(cv,0,0,600,400);let ok=true;try{const d=t2.getContext("2d").getImageData(0,0,600,400).data;const f=[d[0],d[1],d[2]];ok=false;for(let i=0;i<d.length;i+=4*997){if(Math.abs(d[i]-f[0])+Math.abs(d[i+1]-f[1])+Math.abs(d[i+2]-f[2])>12){ok=true;break}}if(!ok)ERR[a.id]="blank render"}catch(e){ok=true}TH[a.id]=ok?t2:"";s2.remove(g)}catch(e){TH[a.id]="";ERR[a.id]=String(e&&e.message||e).slice(0,70)}});
+  puffs=[];spin=[];
+}
+
+let thTries=0;
+function thumbsMain(from){
+  from=from||0;
+  if(R.getContext().isContextLost()){if(thTries++<6)setTimeout(()=>thumbsMain(0),500);return}
+  const sp=puffs,ss=spin,sg=G,sb=sc.background,sf=sc.fog,nw=winMats.length,sh=sun.castShadow;
+  const OX=700,OZ=700,c2=new THREE.PerspectiveCamera(32,1.5,.1,200);
+  sc.background=new THREE.Color(0xe3f0f7);sc.fog=null;sun.castShadow=false;
+  const base=new THREE.Mesh(new THREE.CylinderGeometry(1,1.06,.3,48),L(0x6db35a));sc.add(base);
+  R.setPixelRatio(1);R.setSize(600,400,false);
+  const end=Math.min(A.length,from+6);
+  try{for(let i=from;i<end;i++){const a=A[i];if(TH[a.id])continue;try{const g=new THREE.Group();g.position.set(OX,0,OZ);sc.add(g);puffs=[];spin=[];G=g;MD[a.id]();puffs.forEach(p=>p.position.set(p.userData.x+p.userData.ph*.6,p.userData.y0+p.userData.ph*1.8,p.userData.z));
+    g.updateMatrixWorld(true);
+    const bb=new THREE.Box3().setFromObject(g),c=bb.getCenter(new THREE.Vector3()),sz=bb.getSize(new THREE.Vector3()),r=Math.max(sz.x,sz.y*1.3,sz.z,1.6),k=Math.max(1.8,r*.95);
+    base.scale.set(k,1,k);base.position.set(c.x,c.y-sz.y/2-.15,c.z);
+    c2.position.set(c.x+r*1.05,c.y+r*.85,c.z+r*1.25);c2.lookAt(c.x,c.y,c.z);
+    R.render(sc,c2);const t2=document.createElement("canvas");t2.width=420;t2.height=280;const x2=t2.getContext("2d");x2.drawImage(cv,0,0,420,280);
+    let okpx=true;try{okpx=x2.getImageData(8,8,1,1).data[3]>0&&x2.getImageData(410,270,1,1).data[3]>0}catch(e){}
+    if(okpx){TH[a.id]=t2;delete ERR[a.id]}else ERR[a.id]="blank render";
+    sc.remove(g);g.traverse(o=>{if(o.geometry)o.geometry.dispose();if(o.material)mats(o).forEach(m=>m.dispose&&m.dispose())})}catch(e){ERR[a.id]=String(e&&e.message||e).slice(0,70)}}}
+  finally{winMats.length=nw;sc.remove(base);sc.background=sb;sc.fog=sf;sun.castShadow=sh;puffs=sp;spin=ss;G=sg;size()}
+  if(end<A.length)setTimeout(()=>thumbsMain(end),45);
+  else{draw();if(A.some(a=>!TH[a.id])&&thTries++<4)setTimeout(()=>thumbsMain(0),600)}
+}
+cv.addEventListener("webglcontextlost",e=>e.preventDefault());
+cv.addEventListener("webglcontextrestored",()=>{Object.keys(TH).forEach(k=>delete TH[k]);Object.keys(ERR).forEach(k=>delete ERR[k]);thTries=0;setTimeout(()=>thumbsMain(0),300)});
+/* ---------- Game ---------- */
+const temp=()=>1+S.co2/40;
+const noCh=s=>s.replace(/ ?\(Ch\.[^)]*\)/g,"");
+const liveScore=()=>{const avg=Object.values(S.m).reduce((a,b)=>a+b)/6,pen=Math.max(0,(temp()-1.5)*30),gd=goalList().filter(g=>g[1]).length;return Math.min(100,Math.round(Math.max(0,avg*.7+30-pen))+gd*3+S.quiz+S.ch.ok*2)};
+const maint=()=>Math.round(A.reduce((t,a)=>t+S.n[a.id]*a.cost*.04,0));
+const revenue=()=>A.reduce((t,a)=>t+(a.rev||0)*S.n[a.id],0);
+function init(){
+  S={y:1,cash:START,pop:2000,m:{w:70,s:70,e:70,a:75,f:70,q:70},r:{w:0,s:0,e:0,a:0,f:0,q:0,c:0},n:{},pl:[],co2:0,over:false,learn:[],crops:[],h:[],quiz:0,bonus:0};sel=null;S.ch=mkCh();S.nx=pick();S.chMsg="";S.hvTot=0;S.hvMsg="";
+  zmT=2.2;pxT=0;pzT=0;{const e=$("crop");if(e)e.value="none"}
+  A.forEach(x=>S.n[x.id]=0);S.h.push({...S.m,t:1});
+  $("end").innerHTML="";$("next").style.display="";
+  $("log").innerHTML="<h3>Yearly report</h3><p>Choose a building, then choose its plot. Every building has a price. When you are done, close the year.</p>";
+  size();build3d();updatePads();draw();selB=-1;updateSel();
+}
+function chart(){const hy=$("hy");if(hy)hy.textContent=YRS;
+  const H=S.over?S.h:[...S.h,{...S.m,t:temp()}],X=i=>22+i*(212/YRS),Y=v=>70-v*.62;
+  let s="";
+  [0,50,100].forEach(v=>{s+=`<line x1="22" x2="234" y1="${Y(v)}" y2="${Y(v)}" stroke="currentColor" opacity=".15"/><text x="18" y="${Y(v)+3}" font-size="7" text-anchor="end" fill="currentColor" opacity=".6">${v}</text>`});
+  [0,.25,.5,.75,1].map(f=>Math.round(f*YRS)).forEach(i=>{s+=`<text x="${X(i)}" y="79" font-size="7" text-anchor="middle" fill="currentColor" opacity=".6">${i}</text>`});
+  const line=(c,f,d)=>`<polyline fill="none" stroke="${c}" stroke-width="1.8" ${d?'stroke-dasharray="3 2"':""} points="${H.map((p,i)=>X(i)+","+Y(f(p))).join(" ")}"/>`;
+  Object.keys(M).forEach(k=>{s+=line(COL[k],p=>p[k]);if(!S.over){const p=H[H.length-1];s+=`<circle cx="${X(H.length-1)}" cy="${Y(p[k])}" r="2.4" fill="${COL[k]}"/>`}});
+  s+=line("#d4553a",p=>Math.min(100,(p.t-1)*50),1);
+  $("ch").innerHTML=s;
+  $("lg").innerHTML=Object.keys(M).map(k=>`<span style="color:${COL[k]}">&#9632;</span> ${M[k]}`).join(" &nbsp; ")+' &nbsp; <span style="color:#d4553a">&#9632;</span> Warming (dashed). Last dot = right now.';
+}
+function draw(){
+  $("yr").textContent="Year "+S.y+" / "+YRS;$("cash").textContent="Budget $"+Math.round(S.cash)+"M";$("pop").textContent="Population "+Math.round(S.pop);$("sc").textContent="Score now "+liveScore();
+  const T=temp();
+  $("ms").innerHTML=Object.keys(M).map(k=>{const v=Math.round(S.m[k]),c=v<30?"var(--bad)":v<55?"#e0b43a":"var(--ok)";return `<div class="m" style="border-left-color:${COL[k]}">${M[k]}<b style="float:right">${v}</b><div><i style="width:${v}%;background:${c}"></i></div></div>`}).join("")+`<div class="m" style="border-left-color:#e0689a">Happiness<b style="float:right">${happiness()}</b><div><i style="width:${happiness()}%;background:${happiness()<35?"var(--bad)":happiness()<60?"#e0b43a":"var(--ok)"}"></i></div><div style="margin-top:4px;display:flex;align-items:center;gap:3px;height:auto;background:none;overflow:visible">${faces(happiness())}<span style="margin-left:4px;font-size:11px;font-weight:700;color:${happiness()<35?"var(--bad)":happiness()<60?"#b8860b":"var(--ok)"}">${happiness()<35?"In danger":happiness()<60?"Uneasy":"Happy"}</span></div></div><div class="m" style="border-left-color:#7fa83a">Self-sufficiency<b style="float:right">${selfSuff()}%</b><div><i style="width:${selfSuff()}%;background:${selfSuff()<35?"var(--bad)":selfSuff()<65?"#e0b43a":"var(--ok)"}"></i></div></div><div class="m" style="border-left-color:#d4553a">Warming<b style="float:right">+${(T-1).toFixed(1)}°C</b><div><i style="width:${Math.min(100,(T-1)*50)}%;background:${T>1.8?"var(--bad)":"#e0b43a"}"></i></div></div>`;
+  $("flt").innerHTML=Object.keys(CATS).map(k=>`<button class="btn" style="${flt==k?"background:var(--ac);color:#fff;":""}margin:0 4px 6px 0" onclick="flt='${k}';draw()">${k}</button>`).join("");
+  $("acts").innerHTML=A.filter(x=>!CATS[flt]||CATS[flt].includes(x.id)).map(x=>`<button class="a ${sel==x.id?"sel":""}" data-id="${x.id}" ${S.cash<x.cost||S.n[x.id]>=x.cap||S.over?"disabled":""}><div class="ph" data-th="${x.id}">${x.n}${ERR[x.id]?`<br><small>(${ERR[x.id]})</small>`:""}</div><span class="price">$${x.cost}M</span><div class="t"><b>${x.n}</b><span class="ch">${x.ch.replace(/^Ch\.[\d,\s\/]+/,"")||"Waste and food"}</span><div class="c">${Object.entries(x.r).map(([k,v])=>`<span class="${(k=="c"?v<0:v>0)?"p":"n"}">${LAB[k]} ${v>0?"+":""}${v}</span>`).join("")}</div><small>Where: ${[...x.z].map(z=>ZN[z]).join(", ")}</small>${x.x?`<small>${x.x}</small>`:""}<small>Built ${S.n[x.id]} / ${x.cap} · upkeep $${(x.cost*.04).toFixed(1)}M/yr</small></div></button>`).join("");
+  $("acts").querySelectorAll(".ph[data-th]").forEach(h=>{const t=TH[h.dataset.th];if(t){try{const c=document.createElement("canvas");c.width=420;c.height=280;c.className="thc";c.getContext("2d").drawImage(t,0,0,420,280);h.replaceWith(c)}catch(e){}}});
+  chart();chal();goals();
+}
+function build(id,k){
+  const x=A.find(a=>a.id==id);if(S.cash<x.cost||S.n[id]>=x.cap)return;
+  S.cash-=x.cost;S.n[id]++;S.pl.push({id,x:k.x,z:k.z,a:k.a});sel=null;
+  const r={...x.r};if(x.pol)r.q=(r.q||0)+eqPen(k);S.pl[S.pl.length-1].r=r;
+  for(const q in r){S.r[q]+=r[q];if(M[q])S.m[q]=Math.min(100,Math.max(0,S.m[q]+r[q]*1.5))}
+  build3d();updatePads();draw();
+}
+const Q={locust:["What best protects an island from sudden crop losses?",["A strategic food reserve","Importing nothing","Planting one crop only"],0],pest:["Why does growing many crop types reduce risk?",["A pest rarely harms every crop the same way","It needs more fertilizer","It lowers rainfall"],0],price:["What makes an island less exposed to world food price spikes?",["Producing more of its own food","Stopping all trade","Wasting more food"],0],heat:["Which strategy best prepares an island for heatwaves?",["Rely on one big gas plant","Diversify energy with solar, wind and storage","Ignore cooling demand"],1],dry:["What most reduces drought risk?",["Diversified water sources like stored rain","Using more water per person","Pumping groundwater faster"],0],storm:["How do mangroves help during storm surges?",["They attract more storms","They absorb wave energy and protect the shore","They raise electricity supply"],1],oil:["Why are renewables more resilient to fuel price spikes?",["They need no imported fuel","They are always cheaper to build","They emit more CO₂"],0],bleach:["What most helps coral reefs survive warming seas?",["Protected marine areas and lower CO₂","Dredging the seabed","More coastal lights"],0],sand:["How do trees and green belts help in sandstorms?",["They trap dust and protect air quality","They create more dust","They block all rain"],0],boom:["What does rapid population growth mainly do?",["Lowers demand on resources","Raises demand for water, energy and food","Has no environmental effect"],1]};
+function quiz(ev){const q=Q[ev];$("log").insertAdjacentHTML("beforeend",`<div id="qz" style="margin-top:8px;border-top:1px dashed var(--bd);padding-top:8px"><b>Bonus question (+$15M if correct)</b><p>${q[0]}</p>${q[1].map((o,i)=>`<button class="btn" style="margin:3px 0;width:100%;text-align:left;border-radius:10px" onclick="qa(${i},${q[2]})">${o}</button>`).join("")}</div>`)}
+function qa(i,c){const z=$("qz");if(!z)return;z.removeAttribute("id");z.querySelectorAll("button").forEach(b=>b.disabled=true);z.insertAdjacentHTML("beforeend",i==c?'<p style="color:var(--ok)"><b>Correct.</b> $15M added to your budget.</p>':'<p style="color:var(--bad)"><b>Not quite.</b> Review the chapter and try next year.</p>');if(i==c){S.cash+=15;S.quiz++;draw()}}
+function syn(){const n=S.n,o=[];if(n.solar&&n.desal)o.push(["Solar-powered desalination",{e:1.5*Math.min(n.solar,n.desal),a:.5}]);if(n.wind&&n.desal)o.push(["Wind-powered desalination",{e:1,a:.4}]);if(n.comp&&n.vf)o.push(["Compost feeds vertical farms",{f:1.5}]);if(n.recy&&n.edu)o.push(["Education boosts recycling",{s:1.5}]);if(n.mang&&n.rain)o.push(["Wetlands recharge stored water",{w:1.5}]);if(n.fair&&n.edu)o.push(["Inclusive education",{q:1.5}]);if(n.wtx&&n.fact)o.push(["Factory waste feeds energy",{s:1.5,e:1}]);if(n.roof&&n.green)o.push(["Rooftop farms on green apartments",{f:1.5,w:.5}]);if(n.eco&&n.edu)o.push(["Green skills pipeline",{q:1.5}]);if(n.park&&n.green)o.push(["Shaded green neighbourhood",{a:1,q:.5}]);if(n.hotel&&n.solar)o.push(["Solar-powered hotel",{e:1}]);if(n.hotel&&n.mang)o.push(["Eco-tourism with mangroves",{q:1,w:.5}]);if(n.hotel&&n.rain)o.push(["Hotel uses harvested rainwater",{w:1}]);if(n.council&&n.townhall)o.push(["Participatory planning",{q:1}]);if(n.volunteers&&n.recy)o.push(["Clean-up crews",{s:1.2}]);if(n.eventspace&&n.farmmarket)o.push(["Weekend food festival",{q:.6,f:.4}]);if(n.homegarden&&n.comp)o.push(["Kitchen scraps feed home gardens",{s:1,f:.5}]);if(n.commgarden&&n.edu)o.push(["Garden classroom",{q:.8,f:.3}]);if(n.coldchain&&n.farmmarket)o.push(["Fresh food, less waste",{s:1,f:.6}]);if(n.seedbank&&n.silo)o.push(["Strategic food reserve",{q:.8,f:.6}]);if(n.veggie&&n.fruitorch&&n.orchard)o.push(["Diverse harvest",{f:1.2,q:.4}]);if(n.foodrecover&&n.comp)o.push(["Closed food loop",{s:1.2}]);if(n.fishfarm&&n.reef)o.push(["Healthy seas, healthy fish",{f:.8,w:.3}]);if(n.farm&&n.drip)o.push(["Efficient irrigation",{f:1,w:.5}]);if(n.farm&&n.silo)o.push(["Food security reserve",{f:1.2,q:1}]);if(n.orchard&&n.saltcrop)o.push(["Climate-smart farming",{a:.5,c:-1,f:.5}]);if(n.agrilab&&n.farm)o.push(["Research-led yields",{f:1}]);if(n.police&&n.fire)o.push(["Emergency services network",{q:1}]);if(n.library&&n.edu)o.push(["Learning district",{q:.8,s:.4}]);if(n.townhall&&n.fair)o.push(["Transparent, fair governance",{q:1}]);if(n.cable&&n.hotel)o.push(["Scenic eco-tourism ride",{q:.8,a:.4}]);if(n.metro&&n.mall)o.push(["Mall at the metro station",{a:.8,q:.3}]);if(n.metro&&n.bikehub)o.push(["First and last mile cycling",{a:.8}]);if(n.cable&&n.solar)o.push(["Solar-powered ropeway",{e:1}]);if(n.tram&&n.eco)o.push(["Connected workplaces",{a:.8}]);if(n.badgir&&n.green)o.push(["Passive cooling neighbourhood",{e:1}]);if(n.market&&n.roof)o.push(["Local produce chain",{f:1.5,q:.5}]);if(n.grey&&n.park)o.push(["Irrigated parks",{w:1,a:.3}]);if(n.flood&&n.mang)o.push(["Layered coastal defense",{q:.8,w:.5}]);if(n.mall&&n.solar)o.push(["Solar-powered mall",{e:2}]);if(n.mall&&n.tram)o.push(["Mall on the tram line",{a:.8}]);if(n.hydro&&n.solar)o.push(["Solar-powered hydroponics",{e:.8,f:.8}]);if(n.aqua&&n.grey)o.push(["Recycled water for fish farming",{w:1,f:.6}]);if(n.fun&&n.park)o.push(["Leisure district",{q:1}]);if(n.school&&n.edu)o.push(["Campus and classrooms",{q:1}]);if(n.reef&&n.hotel)o.push(["Dive tourism",{q:.8}]);if(n.tidal&&n.desal)o.push(["Tide-powered desalination",{e:1,a:.3}]);if(n.hospital&&n.airmon)o.push(["Health surveillance",{q:1}]);if(n.carbon&&n.solar)o.push(["Clean carbon removal",{e:1}]);if(n.fog&&n.rain)o.push(["Layered water harvesting",{w:1}]);if(n.meters&&n.wtp)o.push(["Leak-free network",{w:1}]);if(n.h2&&n.solar)o.push(["Solar hydrogen",{e:1.2,a:.4}]);if(n.evhub&&(n.solar||n.wind))o.push(["Clean EV charging",{a:.6,e:.6}]);if(n.mpa&&n.reef)o.push(["Protected reef",{w:1,f:.5}]);if(n.bees&&(n.veggie||n.fruitorch||n.orchard))o.push(["Pollinated harvests",{f:1}]);if(n.falaj&&n.edu)o.push(["Heritage lessons",{q:1}]);if(n.innolab&&n.eco)o.push(["Innovation cluster",{q:.6,e:.6}]);if(n.nurveg&&(n.tomato||n.cucumber||n.pepper||n.eggplant||n.leafy))o.push(["Seedlings feed vegetable beds",{f:1}]);if(n.nurfruit&&(n.fig||n.pomegranate||n.citrus||n.mango))o.push(["Saplings renew the groves",{f:.8,a:.3}]);if(n.nurmang&&n.mang)o.push(["Mangrove restoration",{w:1,a:.4}]);if(n.nurshade&&n.park)o.push(["Greener streets and parks",{a:.8,q:.4}]);if(n.greenco&&n.greentech)o.push(["Green business cluster",{q:.8,e:.4}]);if(n.ecohotel&&n.falaj)o.push(["Heritage eco-tourism",{q:.8}]);if(n.fgreen&&n.recy)o.push(["Circular industry",{s:1.5}]);if(n.solarhome&&n.heritagehome)o.push(["Smart traditional homes",{e:.6,q:.4}]);return o}
+const CHP=[
+{t:"Reach 55% food self-sufficiency",f:()=>selfSuff()>=55,r:25},
+{t:"Keep Water above 50 for 3 years in a row",f:()=>S.m.w>50,h:3,r:25},
+{t:"Run on clean power: 3 solar, wind or tidal plants and zero gas",f:()=>S.n.solar+S.n.wind+S.n.tidal>=3&&S.n.gas==0,r:25},
+{t:"Keep resident happiness above 65 for 3 years",f:()=>happiness()>65,h:3,r:30},
+{t:"Keep warming below +0.5°C for 3 years",f:()=>temp()<1.5,h:3,r:25},
+{t:"Protect the sea: build a Marine protected area and a Reef",f:()=>S.n.mpa>=1&&S.n.reef>=1,r:20}];
+function mkCh(){const k=YRS<=12?3:YRS<=20?5:6,st=Math.floor(YRS/k);return{ok:0,fail:0,list:CHP.slice(0,k).map((c,i)=>({t:c.t,f:c.f,h:c.h||0,r:c.r,s:1+i*st,e:i==k-1?YRS:(i+1)*st,p:0,st:"open"}))}}
+function chEval(){let o="";S.ch.list.forEach(c=>{if(c.st!="open"||S.y<c.s)return;if(c.h)c.p=c.f()?c.p+1:0;const win=c.h?c.p>=c.h:c.f();
+ if(win){c.st="won";S.ch.ok++;S.cash+=c.r;o+=`<p style="margin:4px 0;color:var(--ok)"><b>Challenge complete:</b> ${c.t} (+$${c.r}M)</p>`}
+ else if(S.y>=c.e){c.st="lost";S.ch.fail++;S.cash-=5;o+=`<p style="margin:4px 0;color:var(--bad)"><b>Challenge missed:</b> ${c.t} (−$5M)</p>`}});return o}
+const EVF={heat:"Heatwave expected. Make sure your grid and cooling can cope.",dry:"Drought expected. Rain tanks and stored water will help.",storm:"Storm surge expected. Mangroves or flood barriers protect the coast.",oil:"Fuel price spike expected. Gas plants will cost more to run.",boom:"Tourism boom expected. Population will jump; add schools and services.",locust:"Locust swarm expected. A grain silo protects your food supply.",pest:"Crop disease expected. Diverse crops and a seed bank reduce the damage.",price:"Global food price spike expected. Local food production shields you.",bleach:"Coral bleaching expected. Reefs and a marine protected area help.",sand:"Sandstorm expected. Parks, mangroves and air monitors help."};
+function chal(){const c=S.ch,a=c.list.find(x=>x.st=="open"&&S.y>=x.s&&S.y<=x.e),nx=c.list.find(x=>x.st=="open"&&x.s>S.y),dn=c.list.filter(x=>x.st!="open");
+ $("chal").innerHTML=`<h3>Challenges <span class="tag2" style="border-color:var(--ok);color:var(--ok)">${c.ok} won</span> <span class="tag2">${c.fail} missed</span></h3>`+(a&&!S.over?`<p style="margin:0"><b>${a.t}</b></p><p class="hint" style="margin:2px 0 0">${a.e-S.y+1} year(s) left${a.h?" · streak "+a.p+" / "+a.h:""} · Reward +$${a.r}M</p>`:'<p class="hint" style="margin:0">No active challenge this year.</p>')+(nx&&!S.over?`<p class="hint" style="margin:4px 0 0">Next, from year ${nx.s}: ${nx.t}</p>`:"")+(dn.length?`<div style="margin-top:4px">${dn.map(x=>`<span class="tag2" style="border-color:${x.st=="won"?"var(--ok)":"var(--bad)"};color:${x.st=="won"?"var(--ok)":"var(--bad)"}">${x.st=="won"?"Won":"Missed"}: ${x.t}</span>`).join("")}</div>`:"")+(S.over?"":`<p style="margin:6px 0 0"><b>Next year's forecast:</b> ${EVF[S.nx]||""}</p>`)}
+function chReport(){const c=S.ch;return `<h3 style="margin:14px 0 4px">Challenges</h3><p style="margin:0 0 4px;font-size:13px"><b>${c.ok}</b> of ${c.list.length} completed (each one adds 2 points to your game score).</p><p style="margin:0 0 4px;font-size:13px">Total harvest over the game: <b>${S.hvTot||0}</b> crates.</p><div>${c.list.map(x=>`<span class="tag2" style="border-color:${x.st=="won"?"var(--ok)":x.st=="lost"?"var(--bad)":"var(--bd)"};color:${x.st=="won"?"var(--ok)":x.st=="lost"?"var(--bad)":"var(--mu)"}">${x.st=="won"?"Won":x.st=="lost"?"Missed":"Not reached"}: ${x.t}</span>`).join("")}</div>`}
+const HV={tomato:["tomato",3,0xe0372d],cucumber:["cucumber",3,0x7cc35a],pepper:["pepper",2,0xf1c40f],eggplant:["eggplant",2,0x6a2a7a],leafy:["leafy greens",3,0x7fcf6a],fig:["fig",2,0x6a3a6a],pomegranate:["pomegranate",2,0xc0392b],citrus:["citrus",3,0xf39c12],mango:["mango and banana",3,0xf5a623],melon:["melon",3,0xe8d96b],fruitorch:["mixed fruit",3,0xf39c12],veggie:["vegetables",3,0x3f9b4a],orchard:["dates",3,0x8a4b2a]};
+function harvest(){const n=S.n,parts=[];let tot=0;for(const id in HV){const c=n[id]||0;if(c){const y=c*HV[id][1];tot+=y;parts.push(HV[id][0]+" "+y)}}
+ const sp=Math.max(.05,.35-.12*Math.min(2,n.coldchain)-.04*n.farmmarket-.03*n.silo),spoil=Math.round(tot*sp),good=tot-spoil,sf=Math.min(.9,.4+.15*n.farmmarket+.05*n.market+.04*n.souq),sold=Math.round(good*sf),cash=Math.round(sold*.45*10)/10,waste=spoil*.1*(1-.25*Math.min(2,n.comp+n.foodrecover));
+ return{tot,parts,spoil,good,sold,cash,waste}}
+function truckMesh(c){const g=new THREE.Group(),a=(geo,col,x,y,z,rx)=>{const m=new THREE.Mesh(geo,L(col));m.position.set(x,y,z);if(rx)m.rotation.x=rx;m.castShadow=true;g.add(m);return m};
+ a(new THREE.BoxGeometry(.16,.14,.2),0x2e8b3d,.2,.2,0);a(new THREE.BoxGeometry(.34,.06,.22),0x6b7178,-.05,.14,0);[-.1,.12].forEach(x=>[-.11,.11].forEach(z=>a(new THREE.CylinderGeometry(.06,.06,.04,10),0x222222,x,.08,z,Math.PI/2)));
+ [-.15,.02].forEach(x=>{a(new THREE.BoxGeometry(.14,.09,.16),0x9c7f55,x,.22,0);a(new THREE.SphereGeometry(.05,6,5),c,x,.3,0)});return g}
+function harvest_(){}
+function goalList(){return[["Keep every indicator above 40",Object.values(S.m).every(v=>v>=40)],["Keep warming below +0.6°C",temp()<1.6],["Run the island with zero gas plants",S.n.gas==0],["Reach 60% food self-sufficiency",selfSuff()>=60],["Keep resident happiness above 60",happiness()>=60]]}
+function goals(){const m=S.m,low=Object.keys(M).reduce((a,b)=>m[a]<m[b]?a:b),sy=syn();const adv={w:"Water is your weakest point. Try Rain tanks or a Water treatment plant (Ch. 10).",s:"Waste is piling up. Build a Recycling hub or Waste-to-energy plant (Ch. 16).",e:"Energy is lowest. Solar and wind are clean; gas is fast but hurts air and climate (Ch. 17, 18).",a:"Air quality is dropping. Electric buses or mangroves help; move polluters to the islet (Ch. 8).",f:"Food is lowest. A Vertical farm or Composting yard helps (Ch. 14).",q:"Equity is lowest. Move polluting plants away from homes and build a Fair Share Center (Ch. 2, 3)."};
+$("goals").innerHTML=`<h3>Goals (+3 score each) and advisor</h3>${goalList().map(g=>`<span class="tag2" style="border-color:${g[1]?"var(--ok)":"var(--bd)"};color:${g[1]?"var(--ok)":"var(--mu)"}">${g[1]?"On track":"Open"}: ${g[0]}</span>`).join("")}<p style="margin:6px 0 0"><b>Advisor:</b> ${noCh(adv[low])}</p><p style="margin:4px 0 0" class="hint">Next close: grant +$${Math.round(GRANT*DIF[dif].g)}M, building revenue +$${revenue()}M, upkeep −$${maint()}M.</p>${sy.length?`<p style="margin:4px 0 0;color:var(--ok)"><b>Synergies active:</b> ${sy.map(s=>s[0]).join(", ")}</p>`:'<p class="hint" style="margin:4px 0 0">Synergies: Solar or Wind + Desalination, Compost + Vertical farm, Education + Recycling or Fair Share, Mangroves + Rain tanks, Waste-to-energy + Factory.</p>'}`}
+function intro(){$("ov").innerHTML=`<div class="ovl"><div class="box" style="max-width:500px;max-height:90vh;overflow:auto"><h2 style="margin:0 0 6px">Welcome, Mayor</h2><p style="margin:0">Your island has <b>2,000 people</b> and a <b>$${START}M budget</b>. Keep it alive for <b>${YRS} years</b> (you can change the length at the top). You choose everything: what to build and where.</p><ol><li><b>Six bars</b> (water, waste, energy, air, food, equity) fall every year as the population grows. If any hits 0, the island collapses.</li><li>Every building has a <b>price</b> and a yearly <b>upkeep</b>. Tap a card, tap anywhere on the island to preview, fine-tune with the buttons, then confirm.</li><li><b>Factories</b> earn money but pollute; they only fit on the far <b>industrial islet</b>. Polluting plants near homes hurt <b>Equity</b> (fair share of environmental burdens).</li><li>Press <b>Close year</b>: you receive the yearly grant, then a random event strikes, and a bonus question can earn extra budget.</li><li>Meet the three <b>goals</b> and use <b>synergies</b> for a top score. Drag to rotate the world.</li></ol><button class="go" onclick="document.getElementById('ov').innerHTML=''">Start playing</button></div></div>`}
+function flash(c){const f=$("fl");f.style.transition="none";f.style.background=c;f.style.opacity=.5;requestAnimationFrame(()=>requestAnimationFrame(()=>{f.style.transition="opacity 1.8s";f.style.opacity=0}))}
+function pick(){const w={heat:1+(temp()-1)*3,dry:1.2,storm:1,oil:1,boom:.8,locust:.7,pest:.6,price:.6,bleach:.5+(temp()-1)*2,sand:.8},T=Object.values(w).reduce((a,b)=>a+b);let r=Math.random()*T;for(const k in w){r-=w[k];if(r<=0)return k}return"dry"}
+function endYear(){
+  const q=S.pop/1000,m=S.m,n=S.n;sel=null;
+  const rev=revenue(),mt=maint();S.cash+=Math.round(GRANT*DIF[dif].g)+rev-mt;const cropK=curCrop(),ssv=selfSuff(),bill=importBill(ssv);S.cash-=bill;
+  const po=PO[$("pol").value];if(po){S.cash+=po.cash;S.co2=Math.max(0,S.co2+(po.co2||0));for(const k in po.m)m[k]=Math.min(100,m[k]+po.m[k])}$("pol").value="";
+  for(const k in M){const p=((k=="a"?2.3:k=="q"?1.9:3.6)*q+(k=="w"||k=="f"?(temp()-1)*.8:0))*DIF[dif].d*(1+.035*(S.y-1));m[k]=Math.min(100,Math.max(0,m[k]+S.r[k]*.6-p))}
+  S.co2=Math.max(0,S.co2+2*q+S.r.c);S.pop*=Math.pow(2.01,1/YRS)-.02*n.edu-.01*n.school;syn().forEach(s=>{for(const k in s[1])m[k]=Math.min(100,m[k]+s[1][k])});
+  {const c=CROPS[cropK],ff=farmFactor();for(const k of ["f","w","e","a","s"])if(c[k])m[k]=Math.min(100,Math.max(0,m[k]+c[k]*ff));if(c.co2)S.co2=Math.max(0,S.co2+c.co2*ff);S.crops.push(cropK);m.f=Math.min(100,Math.max(0,m.f+(ssv-45)*.03))}
+  {const HR=harvest();S.cash+=HR.cash;m.f=Math.min(100,m.f+Math.min(2,HR.good*.03));m.s=Math.max(0,m.s-HR.waste);S.hvTot=(S.hvTot||0)+HR.tot;S.hvMsg=HR.tot?`<p class="hint">Harvest: ${HR.tot} crates (${HR.parts.join(", ")}) · ${HR.spoil} spoiled · ${HR.sold} sold for +$${HR.cash}M${HR.spoil>HR.tot*.2?". Cold storage and markets cut spoilage.":""}</p>`:'<p class="hint">Harvest: nothing yet. Build fields, groves or nurseries in My Farm.</p>'}
+  const hv=happiness();S.pop*=1+(hv-55)*.0008;if(hv<35)S.cash-=12;else if(hv>=75)S.cash+=8+n.hotel*2;
+  const dv=diversity(),ev=S.nx||pick();let t;
+  if(ev=="heat"){const ok=m.e>=55-10*n.grid;if(!ok){m.e-=15;m.f-=8}t=[ok,"Heatwave. "+(ok?"Your grid kept cooling running.":"Blackouts hit and crops wilted."),"Rising temperatures stress energy and food systems (Ch. 9).","rgba(233,140,60,1)"]}
+  if(ev=="dry"){const ok=m.w>=55||n.rain>=2;if(!ok)m.w-=20;t=[ok,"Drought. "+(ok?"Stored water carried you through.":"Reservoirs ran dry."),"Diversified water supply builds resilience (Ch. 10).","rgba(214,190,110,1)"]}
+  if(ev=="storm"){const ok=n.mang>=1||n.flood>=1||n.reef>=1;if(!ok){m.w-=10;m.s-=12}fx=performance.now()/1000;t=[ok,"Storm surge. "+(ok?"Mangroves absorbed the waves.":"Flooding spread waste and polluted water."),"Natural coastal ecosystems protect people (Ch. 15).","rgba(20,40,80,1)"]}
+  if(ev=="oil"){const ok=n.gas==0;if(!ok)m.e-=6*n.gas;t=[ok,"Fuel price spike. "+(ok?"Renewables shielded you.":"Your gas plants became costly."),"Nonrenewable resources bring price and supply risk (Ch. 17).","rgba(60,60,60,1)"]}
+  if(ev=="locust"){const ok=n.silo>=1;if(ok)m.f-=3;else{m.f-=14;S.cash-=10}t=[ok,"Locust swarm. "+(ok?"Your grain silo kept food stable.":"Crops were stripped and you paid $10M for emergency food."),"A strategic food reserve protects people when harvests fail (food security: stability).","rgba(190,160,60,1)"]}
+  if(ev=="pest"){const ok=dv>=.5||n.seedbank>=1;if(!ok)m.f-=10;t=[ok,"Crop disease. "+(ok?"Diverse crops and local seeds limited the damage.":"One type of crop dominated, so the disease spread fast."),"Crop diversity and seed banks reduce the risk of a single failure (food security: stability).","rgba(120,150,60,1)"]}
+  if(ev=="price"){const ok=ssv>=60;const x=Math.round(bill*1.5);if(!ok){S.cash-=x;m.q-=3}t=[ok,"Global food price spike. "+(ok?"You grow enough food locally, so the impact was small.":"Imports cost $"+x+"M more and families struggled."),"Producing food locally lowers exposure to world prices (food security: availability and access).","rgba(200,120,60,1)"]}
+  if(ev=="bleach"){const ok=n.mpa>=1||n.reef>=1;if(!ok){m.f-=8;m.w-=4}t=[ok,"Coral bleaching. "+(ok?"Protected reefs and a healthy sea limited the damage.":"Warm water bleached the coral, and fish catches fell."),"Warming seas and pollution stress reef ecosystems; marine protection helps them recover (Ch. 15).","rgba(120,210,220,1)"]}
+  if(ev=="sand"){const ok=n.park>=1||n.airmon>=1||n.mang>=1;if(!ok){m.a-=14;m.e-=5}t=[ok,"Sandstorm. "+(ok?"Green belts and air monitors reduced the dust and warned people early.":"Dust choked the air and covered the solar panels."),"Vegetation traps dust, and monitoring gives early warnings (Ch. 8).","rgba(214,180,120,1)"]}
+  if(ev=="boom"){S.pop*=n.edu?1.03:1.1;m.s-=5;S.cash+=10*n.hotel;t=[n.edu>0,"Tourism boom. Population jumped.","Population growth increases demand on every resource (Ch. 7).","rgba(255,255,255,1)"]}
+  for(const k in m)m[k]=Math.min(100,Math.max(0,m[k]));
+  S.chMsg=chEval();S.nx=pick();S.learn.push(noCh(t[2]));S.h.push({...m,t:temp()});flash(t[3]);
+  $("log").innerHTML=`<h3>Year ${S.y} report</h3><p class="hint">Grant +$${Math.round(GRANT*DIF[dif].g)}M · Revenue +$${rev}M${po?" · Policy: "+po.n+" ("+(po.cash>=0?"+":"-")+"$"+Math.abs(po.cash)+"M)":""} · Upkeep −$${mt}M · Budget $${Math.round(S.cash)}M</p><p class="hint">Food produced: ${ssv}% of needs · Import bill −$${bill}M · Crop: ${CROPS[cropK].n}${cropK!="none"?" · Crop diversity "+Math.round(dv*100)+"%":""}</p>${S.hvMsg}<p class="hint">Resident happiness: ${hv}%${hv<35?" · protests cost you $12M":hv>=75?" · happy visitors add income":""}</p><p class="hint" style="font-style:italic">${voices(bill)}</p>${S.chMsg}<p><b style="color:${t[0]?"var(--ok)":"var(--bad)"}">${t[0]?"Survived":"Damage"}:</b> ${t[1]}</p><p class="hint">${noCh(t[2])}</p>`;
+  build3d();updatePads();
+  const dead=Object.keys(M).find(k=>m[k]<=0);
+  if(dead)return finish(1,M[dead]);
+  if(S.y>=YRS)return finish(0);
+  S.y++;draw();quiz(ev);
+}
+const BM=[["Coral Bay",86],["Palm Atoll",78],["Harbor Isle",71],["Sunrise Key",64],["Cedar Reef",57],["Dune Point",50],["Salt Cove",43],["Rocky Shoal",36],["Ash Island",28],["Rust Bay",20]];
+const ADV={w:"Add rain tanks, treatment plants or greywater recycling.",s:"Build recycling hubs and compost, and avoid factories and malls.",e:"Mix solar, wind and tidal power with a smart grid.",a:"Use electric transport, parks and air monitors, and keep polluters away.",f:"Add hydroponics, aquaponics, rooftop farms and markets.",q:"Keep polluters away from homes; build schools, a hospital and fair-share centers."};
+function sustain(){const m=S.m,tp=temp(),climate=Math.max(0,100-(tp-1)*100),env=((m.a+m.w+m.s)/3)*.7+climate*.3,soc=(m.q+m.f)/2,fin=Math.min(100,Math.max(0,S.cash*.25+revenue()*1.8)),eco=m.e*.5+fin*.5,tot=(env+soc+eco)/3*(S.rep&&S.rep.col?.4:1);return{env:Math.round(env),soc:Math.round(soc),eco:Math.round(eco),tot:Math.round(tot),climate:Math.round(climate),fin:Math.round(fin)}}
+function showReport(){
+  if(!S.rep)return;
+  const v=sustain(),tot=v.tot,tier=tot>=85?"Platinum":tot>=70?"Gold":tot>=55?"Silver":tot>=40?"Bronze":"Not rated";
+  const arr=[...BM.map(b=>[b[0],b[1],0]),["Your island",tot,1]].sort((a,b)=>b[1]-a[1]),rank=arr.findIndex(r=>r[2])+1;
+  const ent=Object.keys(M).map(k=>[k,S.m[k]]).sort((a,b)=>b[1]-a[1]),good=ent.slice(0,2),bad=ent.slice(-2).reverse();
+  const n=S.n,clean=n.solar+n.wind+n.tidal,share=clean+n.gas?Math.round(clean/(clean+n.gas)*100)+"%":"No power plants built";
+  const cnt={g:0,nu:0,p:0},grp={};
+  S.pl.forEach(b=>{const x=A.find(a=>a.id==b.id),sv=(x.r.a||0)-(x.r.c||0)+(x.r.s||0)*.5,t=sv>.5?"g":sv<-.8?"p":"nu";cnt[t]++;grp[b.id]=grp[b.id]||{n:x.n,c:0,t};grp[b.id].c++});
+  const tc={g:"var(--ok)",nu:"var(--mu)",p:"var(--bad)"},tl={g:"Green",nu:"Neutral",p:"Polluting"},gc=tot>=70?"var(--ok)":tot>=40?"#e0b43a":"var(--bad)";
+  const pb=(nm,val)=>`<div style="margin:6px 0"><div style="display:flex;justify-content:space-between;font-size:13px"><span>${nm}</span><b>${val}%</b></div><div style="height:7px;border-radius:4px;background:var(--bd);overflow:hidden"><i style="display:block;height:100%;width:${val}%;background:${val<40?"var(--bad)":val<70?"#e0b43a":"var(--ok)"}"></i></div></div>`;
+  let snap="";try{snap=cv.toDataURL("image/jpeg",.9)}catch(e){}
+  $("ov").innerHTML=`<div class="ovl"><div class="box" style="max-width:560px;width:100%;max-height:92vh;overflow:auto">
+  <h2 style="margin:0 0 2px">Island evaluation report</h2><p class="hint" style="margin:0 0 10px">${S.rep.col?"The island collapsed in year "+S.y+" ("+S.rep.res+" ran out)":YRS+" years completed"} · Difficulty: ${dif}</p>
+  ${snap.length>3000?`<img src="${snap}" alt="Your final island" style="width:100%;border-radius:16px;display:block;margin-bottom:12px">`:""}
+  <div style="display:flex;align-items:center;gap:14px"><svg width="104" height="104" viewBox="0 0 104 104"><circle cx="52" cy="52" r="42" fill="none" stroke="var(--bd)" stroke-width="10"/><circle cx="52" cy="52" r="42" fill="none" stroke="${gc}" stroke-width="10" stroke-linecap="round" stroke-dasharray="263.9" stroke-dashoffset="${263.9*(1-tot/100)}" transform="rotate(-90 52 52)"/><text x="52" y="58" text-anchor="middle" font-size="24" font-weight="800" fill="currentColor">${tot}%</text></svg>
+  <div><div style="font-size:12px;color:var(--mu)">SUSTAINABILITY</div><div style="font-size:22px;font-weight:800">${tier}</div><div style="font-size:13px">Game score ${S.rep.sc2} / 100 · ${S.rep.rank}</div><div style="font-size:13px;margin-top:2px">Regional rank <b>#${rank} of ${arr.length}</b></div></div></div>
+  <h3 style="margin:14px 0 4px">Three pillars</h3>${pb("Environment (air, water, waste, climate)",v.env)}${pb("Society (fairness, food, health)",v.soc)}${pb("Economy (energy supply, finances)",v.eco)}
+  <h3 style="margin:14px 0 4px">Regional ranking (simulated benchmark islands)</h3>
+  ${arr.map((r,i)=>`<div style="display:flex;justify-content:space-between;padding:4px 8px;border-radius:8px;font-size:13px;${r[2]?"background:var(--ac);color:#fff;font-weight:700":""}"><span>${i+1}. ${r[0]}</span><span>${r[1]}%</span></div>`).join("")}
+  <h3 style="margin:14px 0 4px">Build evaluation</h3>
+  <p style="margin:0;font-size:13px">${S.pl.length} buildings: <b style="color:var(--ok)">${cnt.g} green</b>, ${cnt.nu} neutral, <b style="color:var(--bad)">${cnt.p} polluting</b>. Clean share of power plants: <b>${share}</b>. Warming: <b>+${(temp()-1).toFixed(1)}°C</b>. Population: ${Math.round(S.pop)}.</p>
+  <div style="margin-top:6px">${Object.values(grp).map(g=>`<span class="tag2" style="border-color:${tc[g.t]};color:${tc[g.t]}">${g.n} ×${g.c} · ${tl[g.t]}</span>`).join("")||'<span class="hint">No buildings were placed.</span>'}</div>
+  ${(()=>{const ssf=selfSuff(),acc=n.market+n.souq+n.farmmarket*2+n.commgarden*2+n.homegarden+n.balcony,ut=n.comp+n.foodrecover*2+n.coldchain*2+n.recy,st=n.silo*2+n.seedbank*2+Math.round(diversity()*3)+(S.m.f>=60?1:0);
+  const lv=(v,h,m)=>v>=h?["High","var(--ok)",2]:v>=m?["Medium","#e0b43a",1]:["Low","var(--bad)",0];
+  const rows=[["Availability",lv(ssf,65,35),"Local production covers "+ssf+"% of needs","Build more farms, greenhouses and orchards on the food security islet."],["Access",lv(acc,5,2),"Markets and gardens bring food close to people","Add farmers markets, community gardens and home gardens."],["Utilization",lv(ut,5,2),"Safe storage, less waste and compost","Add cold storage, food recovery and composting."],["Stability",lv(st,5,2),"Reserves, seeds and crop variety","Build silos and a seed bank, and rotate different crops each year."]];
+  const w=rows.slice().sort((a,b)=>a[1][2]-b[1][2])[0];
+  return `<h3 style="margin:14px 0 4px">Food security (four pillars)</h3>`+rows.map(r=>`<div style="display:flex;justify-content:space-between;gap:8px;padding:5px 8px;margin:3px 0;border-left:4px solid ${r[1][1]};border-radius:6px;background:var(--card);font-size:13px"><span><b>${r[0]}</b><br><span class="hint">${r[2]}</span></span><b style="color:${r[1][1]};white-space:nowrap">${r[1][0]}</b></div>`).join("")+`<p style="margin:6px 0 0;font-size:13px"><b>Weakest pillar:</b> ${w[0]}. ${w[3]}</p>`})()}
+   ${(()=>{const tr=n.metro+n.tram+n.bus+n.cable+n.bikehub,ec=n.market+n.souq+n.shops+n.mall+n.farmmarket+n.fun+n.hotel,pt=n.council+n.volunteers+n.eventspace+n.commgarden+n.townhall+n.fair,lf=[n.hospital,n.school+n.edu,n.police+n.fire,n.library+n.mosque,n.park].filter(x=>x>0).length;
+  const lv=(v,h,m)=>v>=h?["High","var(--ok)",2]:v>=m?["Medium","#e0b43a",1]:["Low","var(--bad)",0],hp=happiness(),hl=lv(hp,70,45);
+  const rows=[["Livable services",lv(lf,4,2),lf+" of 5 basics: health, education, safety, culture and worship, green space","Add the missing basics: hospital, school, police or fire, library or mosque, park."],["Mobility",lv(tr,4,1),tr+" clean transport options built","Build a metro, tram, cable car, buses and bike hubs."],["Local economy",lv(ec,5,2),ec+" local shops, markets and visitor spots","Add markets, shops and tourism that keep money on the island."],["Participation",lv(pt,4,1),pt+" community voice and action places","Build neighbourhood councils, a volunteer center, plazas and gardens."]];
+  const w=rows.slice().sort((a,b)=>a[1][2]-b[1][2])[0];
+  return `<h3 style="margin:14px 0 4px">Sustainable community check</h3><div style="display:flex;justify-content:space-between;gap:8px;padding:6px 8px;margin:3px 0 6px;border-radius:8px;background:var(--card);font-size:13px"><span><b>Resident happiness</b><br><span class="hint" style="font-style:italic">${voices(0)}</span></span><b style="color:${hl[1]};white-space:nowrap">${hp}% · ${hl[0]}</b></div>`+rows.map(r=>`<div style="display:flex;justify-content:space-between;gap:8px;padding:5px 8px;margin:3px 0;border-left:4px solid ${r[1][1]};border-radius:6px;background:var(--card);font-size:13px"><span><b>${r[0]}</b><br><span class="hint">${r[2]}</span></span><b style="color:${r[1][1]};white-space:nowrap">${r[1][0]}</b></div>`).join("")+`<p style="margin:6px 0 0;font-size:13px"><b>Weakest area:</b> ${w[0]}. ${w[3]}</p>`})()}
+   ${chReport()}
+   <h3 style="margin:14px 0 4px">The basics</h3>
+  <p style="margin:0 0 6px;font-size:13px"><b>Sustainability</b> means meeting today's needs without harming the future. It rests on three pillars: a healthy <b>environment</b>, a fair <b>society</b> and a stable <b>economy</b>. A strong island balances all three.</p>
+  <p style="margin:0 0 6px;font-size:13px"><b>Strongest areas:</b> ${good.map(g=>M[g[0]]+" "+Math.round(g[1])).join(", ")}.</p>
+  <p style="margin:0 0 4px;font-size:13px"><b>Needs attention:</b></p>
+  <ul style="margin:0 0 6px;padding-left:18px;font-size:13px">${bad.map(b=>`<li><b>${M[b[0]]} ${Math.round(b[1])}:</b> ${ADV[b[0]]}</li>`).join("")}</ul>
+  <p style="margin:0;font-size:12px;color:var(--mu)">Sustainability % = average of the three pillars (climate warming counts inside Environment, budget and revenue inside Economy). The benchmark islands are fictional reference scores.</p>
+  <div style="display:flex;gap:8px;margin-top:14px"><button class="btn" style="flex:1" onclick="document.getElementById('ov').innerHTML=''">Close</button><button class="btn" style="flex:1;background:var(--ac);color:#fff;border-color:var(--ac);font-weight:700" onclick="document.getElementById('ov').innerHTML='';init()">Play again</button></div>
+  </div></div>`}
+function finish(col,res){
+  S.over=true;draw();$("next").style.display="none";
+  const avg=Object.values(S.m).reduce((a,b)=>a+b)/6,tp=temp(),pen=Math.max(0,(tp-1.5)*30);
+  const gd=goalList().filter(g=>g[1]).length,sc2=Math.min(100,(col?Math.round(avg*.3):Math.round(Math.max(0,avg*.7+30-pen)))+gd*3+S.quiz+S.ch.ok*2);
+  const bdg=[[S.n.gas==0,"Gas-free island"],[S.n.reef&&S.n.tidal,"Blue economy"],[temp()<1.3,"Climate stabilizer"],[S.m.q>=70,"Fair island"],[S.n.carbon>0,"Carbon removal pioneer"],[!col&&S.m.w>=80&&S.m.f>=80,"Well fed and watered"]].filter(b=>b[0]);
+  const rank=sc2>=75?"Sustainability Champion":sc2>=55?"Resilient Mayor":sc2>=35?"Struggling Island":"Island in Crisis";
+  $("end").innerHTML=`<div class="box end"><h2 style="margin:0">${col?"Collapse: "+res+" ran out in year "+S.y:YRS+" years complete"}</h2><p style="font-size:18px;margin:6px 0"><b>Score ${sc2} / 100</b>: ${rank}</p><p class="hint">Difficulty: ${dif}. Goals met: ${gd} / ${goalList().length}. Quiz bonuses: ${S.quiz}. Budget left: $${Math.round(S.cash)}M.</p><p class="hint">Warming reached +${(tp-1).toFixed(1)}°C. Final population ${Math.round(S.pop)}.</p>${bdg.length?`<b>Achievements</b><p>${bdg.map(b=>`<span class="tag2" style="border-color:var(--ok);color:var(--ok)">${b[1]}</span>`).join(" ")}</p>`:""}<b>What your island taught you</b><ul>${[...new Set(S.learn)].map(u=>"<li>"+u+"</li>").join("")}</ul><p class="hint">Challenge: can you score above 75 without any gas plants and keep Equity above 60?</p><button class="go" style="background:var(--card);color:var(--tx);border:1px solid var(--bd);box-shadow:none" onclick="showReport()">View evaluation report</button><button class="go" id="again">Play again</button></div>`;
+  $("again").onclick=init;S.rep={col,res,sc2,rank};cyc=false;$("cyb").textContent="Day";selB=-1;updateSel();zmT=2.4;pxT=0;pzT=0;setTimeout(showReport,900);
+}
+$("acts").onclick=e=>{const b=e.target.closest(".a");if(!b||b.disabled)return;selB=-1;updateSel();sel=sel==b.dataset.id?null:b.dataset.id;updatePads();draw();if(sel)$("wrap").scrollIntoView({behavior:"smooth",block:"nearest"})};
+$("next").onclick=endYear;
+init();intro();requestAnimationFrame(loop);setTimeout(()=>{try{thumbsMain(0)}catch(e){ERR._m=String(e&&e.message||e).slice(0,70)}},500);
+setTimeout(()=>{const ks=Object.keys(ERR);if(!Object.values(TH).some(v=>v)&&ks.length){const d=document.createElement("div");d.style.cssText="font-size:12px;color:#c9482e;margin:6px 0";d.textContent="Image preview error: "+ERR[ks[0]];$("acts").before(d)}},6000);
+</script>
+</body>
+</html>
